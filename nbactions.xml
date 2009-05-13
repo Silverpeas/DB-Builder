@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<actions>
+        <action>
+            <actionName>debug</actionName>
+            <goals>
+                <goal>process-classes</goal>
+                <goal>org.codehaus.mojo:exec-maven-plugin:1.1.1:exec</goal>
+            </goals>
+            <properties>
+                
+                <exec.workingdir>C:\Silverpeas\KMEdition\Production\silverpeas\bin</exec.workingdir>
+                
+                <exec.args>-Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address} -Ddbbuilder.home=C:\\Silverpeas\\KMEdition\\Production -Ddbbuilder.data=C:\\Silverpeas\\KMEdition\\Production -classpath %classpath com.silverpeas.dbbuilder.DBBuilder -T POSTGRES -D org.postgresql.Driver -d jdbc:postgresql://localhost:5432/SilverpeasV5 -l postgres -p postgres -I -v</exec.args>
+                <jpda.listen>true</jpda.listen>
+                <exec.executable>java</exec.executable>
+                
+                
+                
+            </properties>
+        </action>
+        <action>
+            <actionName>profile</actionName>
+            <goals>
+                <goal>process-classes</goal>
+                <goal>org.codehaus.mojo:exec-maven-plugin:1.1:exec</goal>
+            </goals>
+            <properties>
+                <exec.args>${profiler.args} -Ddbbuilder.home=C:\\Silverpeas\\KMEdition\\Production -Ddbbuilder.data=C:\\Silverpeas\\KMEdition\\Production -classpath %classpath com.silverpeas.dbbuilder.DBBuilder -T POSTGRES -D org.postgresql.Driver -d jdbc:postgresql://localhost:5432/SilverpeasV5 -l postgres -p postgres -I -v</exec.args>
+                <exec.workingdir>C:\Silverpeas\KMEdition\Production\silverpeas\bin</exec.workingdir>
+                
+                <profiler.action>profile</profiler.action>
+                <exec.executable>${profiler.java}</exec.executable>
+            </properties>
+        </action>
+        
+    </actions>
