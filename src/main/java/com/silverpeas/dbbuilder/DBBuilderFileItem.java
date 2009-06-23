@@ -24,13 +24,14 @@ public class DBBuilderFileItem extends DBBuilderItem {
        		super.setModule(getRoot().getAttributeValue(MODULENAME_ATTRIB));
         }
 
+  @Override
 	public String getVersionFromFile() throws Exception {
 
 		if (versionFromFile == null) {
 
 	        	List listeCurrent = getRoot().getChildren(CURRENT_TAG);
 
-			if (listeCurrent == null)
+			if (listeCurrent == null || listeCurrent.size() ==  0)
 	        		throw new Exception(getModule() + ": no <" + CURRENT_TAG + "> tag found for this module into contribution file.");
 
 			if (listeCurrent.size() != 1)
