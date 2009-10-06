@@ -25,6 +25,8 @@ import com.stratelia.dbConnector.DBConnexion;
 import com.stratelia.dbConnector.DbProcParameter;
 
 import com.silverpeas.FileUtil.StringUtil;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 
 public abstract class DBBuilderPiece {
 
@@ -193,46 +195,46 @@ public abstract class DBBuilderPiece {
   // Cache en BD via JDBC une séquence de désinstallation
   // le paramètre est la liste des valeurs à insérer dans la table SR_UNINSTITEMS
   public void cacheIntoDB(String _package, int _itemOrder, String _pieceType, String _delimiter, Integer _keepDelimiter, String _dbProcName) throws Exception {
-
-    String currentInstruction = "";
-
-    // try {
-    // insertion SR_UNINSTITEMS
-    Long theLong = new Long(System.currentTimeMillis());
-// System.out.println(theLong);
-    String itemID = theLong.toString() + "-" + getIncrement().toString();
-// System.out.println(itemID);
-
-    currentInstruction = "insert into SR_UNINSTITEMS(SR_ITEM_ID, SR_PACKAGE, SR_ACTION_TAG, SR_ITEM_ORDER, SR_FILE_NAME, SR_FILE_TYPE, SR_DELIMITER, SR_KEEP_DELIMITER, SR_DBPROC_NAME) " +
-        "values (" + getSqlStringValue(itemID) + ", " +
-        getSqlStringValue(_package) + ", " +
-        getSqlStringValue(actionName) + ", " +
-        new Integer(_itemOrder) + ", " +
-        getSqlStringValue(pieceName) + ", " +
-        getSqlStringValue(_pieceType) + ", " +
-        getSqlStringValue(_delimiter) + ", " +
-        _keepDelimiter + ", " +
-        getSqlStringValue(_dbProcName) + ")";
-
-    // DBConnexion.getInstance().executeUpdate(currentInstruction);
-    executeSingleUpdate(currentInstruction);
-
-    // insertion SR_SCRIPTS
-    String[] subS = getSubStrings(content);
-    for (int i = 0; i < subS.length; i++) {
-      currentInstruction = "insert into SR_SCRIPTS(SR_ITEM_ID, SR_SEQ_NUM, SR_TEXT) " +
-          "values (" + getSqlStringValue(itemID) + ", " +
-          new Integer(i) + ", " +
-          getSqlStringValue(subS[i]) + ")";
-
-      // DBConnexion.getInstance().executeUpdate(currentInstruction);
-      executeSingleUpdate(currentInstruction);
-    } // for
-
-    // } catch (Exception e) {
-    //	System.out.println("DBBuiderPiece.cacheIntoDB():ERROR:" + currentInstruction);
-    //	throw e;
-    // } // try
+    PreparedStatement pstmt = null;
+    Connection connection = DBConnexion.getInstance().getConnection();
+    try {
+      // insertion SR_UNINSTITEMS
+      Long theLong = new Long(System.currentTimeMillis());
+      String itemID = theLong.toString() + "-" + getIncrement().toString();
+      pstmt = connection.prepareStatement("insert into SR_UNINSTITEMS(SR_ITEM_ID, "
+              + "SR_PACKAGE, SR_ACTION_TAG, SR_ITEM_ORDER, SR_FILE_NAME, SR_FILE_TYPE, SR_DELIMITER, "
+              + "SR_KEEP_DELIMITER, SR_DBPROC_NAME) values ( ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+      pstmt.setString(1, itemID);
+      pstmt.setString(2, _package);
+      pstmt.setString(3, actionName);
+      pstmt.setInt(4, _itemOrder);
+      pstmt.setString(5, pieceName);
+      pstmt.setString(6, _pieceType);
+      pstmt.setString(7, _delimiter);
+      pstmt.setInt(8, _keepDelimiter);
+      pstmt.setString(9, _dbProcName);
+      pstmt.executeUpdate();
+      // insertion SR_SCRIPTS
+      String[] subS = getSubStrings(content);
+      pstmt = connection.prepareStatement("insert into SR_SCRIPTS(SR_ITEM_ID, SR_SEQ_NUM, SR_TEXT) " + "values (?, ?, ? )");
+      for (int i = 0; i < subS.length; i++) {
+        pstmt.setString(1, itemID);
+        pstmt.setInt(2, i);
+        pstmt.setString(3, subS[i]);
+        pstmt.executeUpdate();
+      }
+      connection.commit();
+    } catch(Exception ex){
+      ex.printStackTrace();
+      throw new Exception("\n\t\t***ERROR RETURNED BY THE RDBMS : " + ex.getMessage() + "\n", ex);
+    }finally {
+      if (pstmt != null) {
+        pstmt.close();
+      }
+      if (connection != null) {
+        connection.close();
+      }
+    }
   }
 
   public void executeSingleUpdate(String currentInstruction) throws Exception {
@@ -267,9 +269,7 @@ public abstract class DBBuilderPiece {
       // DBBuilder.displayMessageln("\n\t\t***ERROR RETURNED BY THE RDBMS : " + e.getMessage());
       // DBBuilder.displayMessageln("\t\t***STATEMENT ON ERROR IS : ");
       // DBBuilder.displayMessageln(currentInstruction);
-      throw new Exception("\n\t\t***ERROR RETURNED BY THE RDBMS : " + e.getMessage() +
-          "\n\t\t***STATEMENT ON ERROR IS : " +
-          "\n" + currentInstruction);
+      throw new Exception("\n\t\t***ERROR RETURNED BY THE RDBMS : " + e.getMessage() + "\n\t\t***STATEMENT ON ERROR IS : " + "\n" + currentInstruction);
     } // try
   }
 
@@ -295,9 +295,7 @@ public abstract class DBBuilderPiece {
       // DBBuilder.displayMessageln("\n\t\t***ERROR RETURNED BY THE RDBMS : " + e.getMessage());
       // DBBuilder.displayMessageln("\t\t***STATEMENT ON ERROR IS : ");
       // DBBuilder.displayMessageln(currentInstruction);
-      throw new Exception("\n\t\t***ERROR RETURNED BY THE RDBMS : " + e.getMessage() +
-          "\n\t\t***STATEMENT ON ERROR IS : " +
-          "\n" + currentInstruction);
+      throw new Exception("\n\t\t***ERROR RETURNED BY THE RDBMS : " + e.getMessage() + "\n\t\t***STATEMENT ON ERROR IS : " + "\n" + currentInstruction);
     } // try
   }
 
@@ -382,8 +380,7 @@ public abstract class DBBuilderPiece {
       textList = DBConnexion.getInstance().executeLoopQuery(selectContentFromDB);
     } catch (Exception e) {
       // displayMessageln( "\tIgnore this unfatal error due to empty database." );
-      throw new Exception("\n\t\t***ERROR RETURNED BY THE JVM : " + e.getMessage() + "\n\t\t\t(" +
-          selectContentFromDB + ")");
+      throw new Exception("\n\t\t***ERROR RETURNED BY THE JVM : " + e.getMessage() + "\n\t\t\t(" + selectContentFromDB + ")");
     }
 
     if (textList != null) {
