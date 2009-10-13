@@ -39,6 +39,8 @@ import java.sql.CallableStatement;
 import java.util.Properties;
 import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class DBConnexion {
 
@@ -94,269 +96,118 @@ public class DBConnexion {
   }
 
   public HashMap executeQuery(String query) throws Exception {
-
     Statement stmt = null;
-
     HashMap h = new HashMap();
-
-
-
-
-
     try {
       // Crée l'instruction JDBC à partir de la connexion
       stmt = connection.createStatement();
-
       // Exécute le SQL
       ResultSet results = stmt.executeQuery(query);
-
       // Récupère le meta data
       ResultSetMetaData meta = results.getMetaData();
-
       // Vérification qu'on a un enregistrement!
-
-
-
-
       if (!results.next()) {
         results.close();
         stmt.close();
-
-
-
-
       } // if
-
       // Pour chaque colonne du result set
       for (int i = 1; i
               <= meta.getColumnCount(); i++) {
         Object ob = results.getObject(i);
-
         // Met la valeur dans la HashMap en utilisant le nom
         // de la colonne comme clé
         h.put(meta.getColumnLabel(i), ob);
-
-
-
-
       } // for
-
       results.close();
       stmt.close();
-
-
-
-
     } catch (SQLException e) {
       if (stmt != null) {
         try {
           stmt.close();
-
-
-
-
         } catch (SQLException e2) {
         }
       } // if
 
       try {
         abort();
-
-
-
-
       } catch (SQLException e2) {
       }
-
       throw (Exception) e;
-
-
-
-
     } // try
-
     return h;
-
-
-
-
-
   }
 
-  public ArrayList executeLoopQuery(String query) throws Exception {
+  public List<Map<String, Object>> executeLoopQuery(String query) throws Exception {
     return executeLoopQuery(query, null);
-
-
-
-
   }
 
-  public ArrayList executeLoopQuery(String query, Object[] parameters) throws Exception {
-
+  public List<Map<String, Object>> executeLoopQuery(String query, Object[] parameters) throws Exception {
     Statement stmt = null;
     PreparedStatement pstmt = null;
     ArrayList array = new ArrayList();
-
-
-
-
-
     try {
       ResultSet results;
-
-
-
-
-
       if (parameters == null) {
         // Crée l'instruction JDBC à partir de la connexion
         stmt = connection.createStatement();
-
         // Exécute le SQL
         results = stmt.executeQuery(query);
-
-
-
-
-
       } else {
         // Crée l'instruction JDBC à partir de la connexion
         pstmt = connection.prepareStatement(query);
-
-
-
-
-
         int nbparameters = parameters.length;
-
-
-
-
         for (int i = 0; i
                 < nbparameters; i++) {
           pstmt.setObject(i + 1, parameters[i]);
-
-
-
-
         } // for
         // Exécute le SQL
         results = pstmt.executeQuery();
-
-
-
-
       } // if
       // Récupère le meta data
       ResultSetMetaData meta = results.getMetaData();
-
       // Tant qu'on a des enregistrements dans le result set
-
-
-
-
       while (results.next()) {
 
         // Stockage d'un enregistrement
-        HashMap h = new HashMap(meta.getColumnCount());
-
+        HashMap<String, Object> h = new HashMap<String, Object>(meta.getColumnCount());
         // Pour chaque colonne du result set
-
-
-
-
         for (int i = 1; i
                 <= meta.getColumnCount(); i++) {
-
-//System.out.println(meta.getColumnLabel(i));
-
           Object ob = results.getObject(i);
-//System.out.println(ob);
-
-          // Met la valeur dans la HashMap en utilisant le nom
-          // de la colonne comme clé
-
-          h.put(meta.getColumnLabel(i), ob);
-
-
-
-
+          h.put(meta.getColumnLabel(i).toUpperCase(), ob);
         } // for
         // Ajoute le résultat dans le vecteur
         array.add(h);
-
-
-
-
       } // while
       // Fermeture de l'ensemble résultat
       results.close();
-
-
-
-
-
       if (stmt != null) {
         stmt.close();
-
-
-
-
       }
-
       if (pstmt != null) {
         pstmt.close();
-
-
-
-
       }
-
     } catch (SQLException e) {
 
       if (stmt != null) {
         try {
           stmt.close();
-
-
-
-
         } catch (SQLException e2) {
         }
       } // if
-
       if (pstmt != null) {
         try {
           pstmt.close();
-
-
-
-
         } catch (SQLException e2) {
         }
       } // if
-
       try {
         abort();
-
-
-
-
       } catch (SQLException e2) {
       }
-
       throw (Exception) e;
-
-
-
-
     }
-
     return array;
-
-
-
-
   }
 
   public void executeUpdate(String query) throws Exception {
@@ -364,18 +215,8 @@ public class DBConnexion {
     // ignore les instructions vides
     if (query.trim().length() == 0) {
       return;
-
-
-
-
     }
-
     Statement stmt = null;
-
-
-
-
-
     try {
       //System.out.println(query);
 

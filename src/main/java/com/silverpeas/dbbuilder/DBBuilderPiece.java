@@ -371,19 +371,17 @@ public abstract class DBBuilderPiece {
   }
 
   private synchronized Integer getIncrement() {
-
     int i = increment.intValue();
     i++;
-    this.increment = new Integer(i);
+    increment = new Integer(i);
     return increment;
   }
 
   private String getContentFromDB(String itemID) throws Exception {
 
     String selectContentFromDB = "select SR_SEQ_NUM, SR_TEXT from SR_SCRIPTS where SR_ITEM_ID = '" + itemID + "' order by 1";
-    String content = "";
-    ArrayList textList = null;
-
+    String dbContent = "";
+    List textList = null;
     try {
       textList = DBConnexion.getInstance().executeLoopQuery(selectContentFromDB);
     } catch (Exception e) {
@@ -398,12 +396,11 @@ public abstract class DBBuilderPiece {
         for (int i = 0; i < nbValues; i++) {
           HashMap h = (HashMap) textList.get(i);
           if (h.containsKey("SR_TEXT")) {
-            content = content.concat((String) h.get("SR_TEXT"));
+            dbContent = dbContent.concat((String) h.get("SR_TEXT"));
           }
         } // for
       }
     } // if
-
-    return content;
+    return dbContent;
   }
 }

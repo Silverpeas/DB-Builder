@@ -54,10 +54,6 @@ public class DbBuilder_ep extends DbBuilderDynamicPart {
 	public void run() throws Exception {
 
 		Connection m_Connection = this.getConnection();
-
-		// System.out.println("Data:"+this.getSILVERPEAS_DATA());
-		// System.out.println("Connection:"+this.getConnection());
-
 		ResultSet   rs = null;
 		Statement   stmt = null;
 		PreparedStatement   stmtUpdate = null;
