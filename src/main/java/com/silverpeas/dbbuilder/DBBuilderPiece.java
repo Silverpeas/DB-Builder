@@ -54,7 +54,8 @@ public abstract class DBBuilderPiece {
   protected Instruction[] instructions = null;
 
   // Contructeur utilisé pour une pièce de type fichier
-  public DBBuilderPiece(String pieceName, String actionName, boolean traceMode) throws Exception {
+  public DBBuilderPiece(String pieceName, String actionName, boolean traceMode)
+      throws Exception {
 
     // mémorise le mode trace
     this.traceMode = traceMode;
@@ -94,7 +95,8 @@ public abstract class DBBuilderPiece {
   }
 
   // Contructeur utilisé pour une pièce de type chaîne en mémoire
-  public DBBuilderPiece(String pieceName, String actionName, String content, boolean traceMode) throws Exception {
+  public DBBuilderPiece(String pieceName, String actionName, String content,
+      boolean traceMode) throws Exception {
 
     // mémorise le mode trace
     this.traceMode = traceMode;
@@ -110,7 +112,8 @@ public abstract class DBBuilderPiece {
   }
 
   // Contructeur utilisé pour une pièce stockée en base de données
-  public DBBuilderPiece(String actionInternalID, String pieceName, String actionName, int itemOrder, boolean traceMode) throws Exception {
+  public DBBuilderPiece(String actionInternalID, String pieceName,
+      String actionName, int itemOrder, boolean traceMode) throws Exception {
 
     // mémorise le mode trace
     this.traceMode = traceMode;
@@ -143,7 +146,8 @@ public abstract class DBBuilderPiece {
     return actionName;
   }
 
-  /* retourne le contenu du fichier
+  /*
+   * retourne le contenu du fichier
    */
   public String getContent() {
 
@@ -151,7 +155,8 @@ public abstract class DBBuilderPiece {
     return content;
   }
 
-  /* retourne si oui/non mode trace
+  /*
+   * retourne si oui/non mode trace
    */
   public boolean getTraceMode() {
 
@@ -161,7 +166,8 @@ public abstract class DBBuilderPiece {
 
   public abstract void setInstructions();
 
-  public abstract void cacheIntoDB(String _package, int _itemOrder) throws Exception;
+  public abstract void cacheIntoDB(String _package, int _itemOrder)
+      throws Exception;
 
   public Instruction[] getInstructions() {
 
@@ -175,7 +181,8 @@ public abstract class DBBuilderPiece {
     }
   }
 
-  // Execute via JDBC la séquence d'instructions élémentaires conservées sur instructions[]
+  // Execute via JDBC la séquence d'instructions élémentaires conservées sur
+  // instructions[]
   public void executeInstructions() throws Exception {
 
     String currentInstruction = null;
@@ -186,30 +193,39 @@ public abstract class DBBuilderPiece {
       if (instructions[i].getInstructionType() == Instruction.IN_UPDATE) // DBConnexion.getInstance().executeUpdate(currentInstruction);
       {
         executeSingleUpdate(currentInstruction);
-      } else if (instructions[i].getInstructionType() == Instruction.IN_CALLDBPROC) // DBConnexion.getInstance().executeProcedure(currentInstruction, (DbProcParameter[]) instructions[i].getInstructionDetail());
+      } else if (instructions[i].getInstructionType() == Instruction.IN_CALLDBPROC) // DBConnexion.getInstance().executeProcedure(currentInstruction,
+                                                                                    // (DbProcParameter[])
+                                                                                    // instructions[i].getInstructionDetail());
       {
-        executeSingleProcedure(currentInstruction, (DbProcParameter[]) instructions[i].getInstructionDetail());
+        executeSingleProcedure(currentInstruction,
+            (DbProcParameter[]) instructions[i].getInstructionDetail());
       } else if (instructions[i].getInstructionType() == Instruction.IN_INVOKEJAVA) {
-        executeJavaInvoke(currentInstruction, instructions[i].getInstructionDetail());
+        executeJavaInvoke(currentInstruction, instructions[i]
+            .getInstructionDetail());
       }
 
     } // for
     // } catch (Exception e) {
-    //	System.out.println("DBBuiderPiece.executeInstructions():ERROR:" + currentInstruction);
-    //	throw e;
+    // System.out.println("DBBuiderPiece.executeInstructions():ERROR:" +
+    // currentInstruction);
+    // throw e;
     // } // try
   }
 
   // Cache en BD via JDBC une séquence de désinstallation
-  // le paramètre est la liste des valeurs à insérer dans la table SR_UNINSTITEMS
-  public void cacheIntoDB(String _package, int _itemOrder, String _pieceType, String _delimiter, Integer _keepDelimiter, String _dbProcName) throws Exception {
+  // le paramètre est la liste des valeurs à insérer dans la table
+  // SR_UNINSTITEMS
+  public void cacheIntoDB(String _package, int _itemOrder, String _pieceType,
+      String _delimiter, Integer _keepDelimiter, String _dbProcName)
+      throws Exception {
     PreparedStatement pstmt = null;
     Connection connection = DBConnexion.getInstance().getConnection();
     try {
       // insertion SR_UNINSTITEMS
       Long theLong = new Long(System.currentTimeMillis());
       String itemID = theLong.toString() + "-" + getIncrement().toString();
-      pstmt = connection.prepareStatement("insert into SR_UNINSTITEMS(SR_ITEM_ID, "
+      pstmt = connection
+          .prepareStatement("insert into SR_UNINSTITEMS(SR_ITEM_ID, "
               + "SR_PACKAGE, SR_ACTION_TAG, SR_ITEM_ORDER, SR_FILE_NAME, SR_FILE_TYPE, SR_DELIMITER, "
               + "SR_KEEP_DELIMITER, SR_DBPROC_NAME) values ( ?, ?, ?, ?, ?, ?, ?, ?, ?)");
       pstmt.setString(1, itemID);
@@ -224,7 +240,9 @@ public abstract class DBBuilderPiece {
       pstmt.executeUpdate();
       // insertion SR_SCRIPTS
       String[] subS = getSubStrings(content);
-      pstmt = connection.prepareStatement("insert into SR_SCRIPTS(SR_ITEM_ID, SR_SEQ_NUM, SR_TEXT) " + "values (?, ?, ? )");
+      pstmt = connection
+          .prepareStatement("insert into SR_SCRIPTS(SR_ITEM_ID, SR_SEQ_NUM, SR_TEXT) "
+              + "values (?, ?, ? )");
       for (int i = 0; i < subS.length; i++) {
         pstmt.setString(1, itemID);
         pstmt.setInt(2, i);
@@ -232,10 +250,11 @@ public abstract class DBBuilderPiece {
         pstmt.executeUpdate();
       }
       connection.commit();
-    } catch(Exception ex){
+    } catch (Exception ex) {
       ex.printStackTrace();
-      throw new Exception("\n\t\t***ERROR RETURNED BY THE RDBMS : " + ex.getMessage() + "\n", ex);
-    }finally {
+      throw new Exception("\n\t\t***ERROR RETURNED BY THE RDBMS : "
+          + ex.getMessage() + "\n", ex);
+    } finally {
       if (pstmt != null) {
         pstmt.close();
       }
@@ -253,15 +272,15 @@ public abstract class DBBuilderPiece {
       // printableInstruction = replaceAll(currentInstruction, "\n", " ");
       // printableInstruction = replaceAll(printableInstruction, "\t", " ");
 
-      printableInstruction = StringUtil.sReplace("\r\n", " ", currentInstruction);
-      printableInstruction = StringUtil.sReplace("\t", " ", printableInstruction);
+      printableInstruction = StringUtil.sReplace("\r\n", " ",
+          currentInstruction);
+      printableInstruction = StringUtil.sReplace("\t", " ",
+          printableInstruction);
 
       /*
-      int i = currentInstruction.indexOf("\n");
-      if (i==-1)
-      printableInstruction = currentInstruction;
-      else
-      printableInstruction = currentInstruction.substring(0, i) + "...";
+       * int i = currentInstruction.indexOf("\n"); if (i==-1)
+       * printableInstruction = currentInstruction; else printableInstruction =
+       * currentInstruction.substring(0, i) + "...";
        */
 
       if (printableInstruction.length() > 147) {
@@ -274,14 +293,18 @@ public abstract class DBBuilderPiece {
       DBConnexion.getInstance().executeUpdate(currentInstruction);
     } catch (Exception e) {
 
-      // DBBuilder.displayMessageln("\n\t\t***ERROR RETURNED BY THE RDBMS : " + e.getMessage());
+      // DBBuilder.displayMessageln("\n\t\t***ERROR RETURNED BY THE RDBMS : " +
+      // e.getMessage());
       // DBBuilder.displayMessageln("\t\t***STATEMENT ON ERROR IS : ");
       // DBBuilder.displayMessageln(currentInstruction);
-      throw new Exception("\n\t\t***ERROR RETURNED BY THE RDBMS : " + e.getMessage() + "\n\t\t***STATEMENT ON ERROR IS : " + "\n" + currentInstruction);
+      throw new Exception("\n\t\t***ERROR RETURNED BY THE RDBMS : "
+          + e.getMessage() + "\n\t\t***STATEMENT ON ERROR IS : " + "\n"
+          + currentInstruction);
     } // try
   }
 
-  public void executeSingleProcedure(String currentInstruction, DbProcParameter[] params) throws Exception {
+  public void executeSingleProcedure(String currentInstruction,
+      DbProcParameter[] params) throws Exception {
 
     String printableInstruction = null;
 
@@ -289,7 +312,8 @@ public abstract class DBBuilderPiece {
       // printableInstruction = replaceAll(currentInstruction, "\n", " ");
       // printableInstruction = replaceAll(printableInstruction, "\t", " ");
       printableInstruction = StringUtil.sReplace("\n", " ", currentInstruction);
-      printableInstruction = StringUtil.sReplace("\t", " ", printableInstruction);
+      printableInstruction = StringUtil.sReplace("\t", " ",
+          printableInstruction);
       if (printableInstruction.length() > 147) {
         printableInstruction = printableInstruction.substring(0, 146) + "...";
       }
@@ -300,17 +324,22 @@ public abstract class DBBuilderPiece {
       DBConnexion.getInstance().executeProcedure(currentInstruction, params);
     } catch (Exception e) {
 
-      // DBBuilder.displayMessageln("\n\t\t***ERROR RETURNED BY THE RDBMS : " + e.getMessage());
+      // DBBuilder.displayMessageln("\n\t\t***ERROR RETURNED BY THE RDBMS : " +
+      // e.getMessage());
       // DBBuilder.displayMessageln("\t\t***STATEMENT ON ERROR IS : ");
       // DBBuilder.displayMessageln(currentInstruction);
-      throw new Exception("\n\t\t***ERROR RETURNED BY THE RDBMS : " + e.getMessage() + "\n\t\t***STATEMENT ON ERROR IS : " + "\n" + currentInstruction);
+      throw new Exception("\n\t\t***ERROR RETURNED BY THE RDBMS : "
+          + e.getMessage() + "\n\t\t***STATEMENT ON ERROR IS : " + "\n"
+          + currentInstruction);
     } // try
   }
 
-  public void executeJavaInvoke(String currentInstruction, Object myClass) throws Exception {
+  public void executeJavaInvoke(String currentInstruction, Object myClass)
+      throws Exception {
 
     if (traceMode) {
-      DBBuilder.displayMessageln("\t\t>" + myClass.getClass().getName() + "." + currentInstruction + "()");
+      DBBuilder.displayMessageln("\t\t>" + myClass.getClass().getName() + "."
+          + currentInstruction + "()");
     }
 
     Method[] methodes = myClass.getClass().getMethods();
@@ -323,8 +352,10 @@ public abstract class DBBuilderPiece {
     }
 
     if (m == null) {
-      // DBBuilder.displayMessageln("\n\t\nNo method \"" + currentInstruction + "\" defined for \"" + myClass.getClass().getName() + "\" class.");
-      throw new Exception("No method \"" + currentInstruction + "\" defined for \"" + myClass.getClass().getName() + "\" class.");
+      // DBBuilder.displayMessageln("\n\t\nNo method \"" + currentInstruction +
+      // "\" defined for \"" + myClass.getClass().getName() + "\" class.");
+      throw new Exception("No method \"" + currentInstruction
+          + "\" defined for \"" + myClass.getClass().getName() + "\" class.");
     } // if
 
     try {
@@ -332,8 +363,10 @@ public abstract class DBBuilderPiece {
 
     } catch (Exception e) {
 
-      // DBBuilder.displayMessageln("\n\t\t***ERROR RETURNED BY THE JVM : " + e.getMessage());
-      throw new Exception("\n\t\t***ERROR RETURNED BY THE JVM : " + e.getMessage());
+      // DBBuilder.displayMessageln("\n\t\t***ERROR RETURNED BY THE JVM : " +
+      // e.getMessage());
+      throw new Exception("\n\t\t***ERROR RETURNED BY THE JVM : "
+          + e.getMessage());
     } // try
   }
 
@@ -379,14 +412,18 @@ public abstract class DBBuilderPiece {
 
   private String getContentFromDB(String itemID) throws Exception {
 
-    String selectContentFromDB = "select SR_SEQ_NUM, SR_TEXT from SR_SCRIPTS where SR_ITEM_ID = '" + itemID + "' order by 1";
+    String selectContentFromDB = "select SR_SEQ_NUM, SR_TEXT from SR_SCRIPTS where SR_ITEM_ID = '"
+        + itemID + "' order by 1";
     String dbContent = "";
     List textList = null;
     try {
-      textList = DBConnexion.getInstance().executeLoopQuery(selectContentFromDB);
+      textList = DBConnexion.getInstance()
+          .executeLoopQuery(selectContentFromDB);
     } catch (Exception e) {
-      // displayMessageln( "\tIgnore this unfatal error due to empty database." );
-      throw new Exception("\n\t\t***ERROR RETURNED BY THE JVM : " + e.getMessage() + "\n\t\t\t(" + selectContentFromDB + ")");
+      // displayMessageln( "\tIgnore this unfatal error due to empty database."
+      // );
+      throw new Exception("\n\t\t***ERROR RETURNED BY THE JVM : "
+          + e.getMessage() + "\n\t\t\t(" + selectContentFromDB + ")");
     }
 
     if (textList != null) {
