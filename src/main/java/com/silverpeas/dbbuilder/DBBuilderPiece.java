@@ -194,8 +194,8 @@ public abstract class DBBuilderPiece {
       {
         executeSingleUpdate(currentInstruction);
       } else if (instructions[i].getInstructionType() == Instruction.IN_CALLDBPROC) // DBConnexion.getInstance().executeProcedure(currentInstruction,
-                                                                                    // (DbProcParameter[])
-                                                                                    // instructions[i].getInstructionDetail());
+      // (DbProcParameter[])
+      // instructions[i].getInstructionDetail());
       {
         executeSingleProcedure(currentInstruction,
             (DbProcParameter[]) instructions[i].getInstructionDetail());

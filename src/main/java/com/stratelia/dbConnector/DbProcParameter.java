@@ -28,7 +28,8 @@ public class DbProcParameter {
   private boolean isOutParameter = false; // vrai pour un paramètre de sortie
   private int parameterType; // Type du paramètre si paramètre de sortie
   private Object parameterValue; // valeur du paramètre à utiliser pour un
-                                 // paramètre en entrée
+
+  // paramètre en entrée
 
   public DbProcParameter(boolean _isOutParameter, int _parameterType,
       Object _parameterValue) {
