@@ -41,8 +41,8 @@ public class DbBuilder_ep extends DbBuilderDynamicPart {
 
   public DbBuilder_ep() {
 
-    // recherche de la propriÈtÈ spÈcifiant l'encryptage
-    // -> si pb de lecture, on considËre qu'on n'a pas ‡ encrypter
+    // recherche de la propri√©t√© sp√©cifiant l'encryptage
+    // -> si pb de lecture, on consid√®re qu'on n'a pas √† encrypter
     try {
       PropertyResourceBundle propFile = (PropertyResourceBundle) PropertyResourceBundle
           .getBundle("com.stratelia.silverpeas.domains.domainSP", Locale

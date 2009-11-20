@@ -32,7 +32,7 @@ public class DBBuilderDynamicLibPiece extends DBBuilderPiece {
   private String methodName = null;
   private DbBuilderDynamicPart dynamicPart = null;
 
-  // contructeurs non utilisés
+  // contructeurs non utilisÃ©s
   private DBBuilderDynamicLibPiece(String pieceName, String actionName,
       boolean traceMode) throws Exception {
     super(pieceName, actionName, traceMode);
@@ -43,14 +43,14 @@ public class DBBuilderDynamicLibPiece extends DBBuilderPiece {
     super(pieceName, actionName, content, traceMode);
   }
 
-  // Contructeur utilisé pour une pièce de type fichier
+  // Contructeur utilisÃ© pour une piÃ¨ce de type fichier
   public DBBuilderDynamicLibPiece(String pieceName, String actionName,
       boolean traceMode, String className, String methodName) throws Exception {
     super(pieceName, actionName, traceMode);
     moreInitialize(className, methodName);
   }
 
-  // Contructeur utilisé pour une pièce de type chaîne en mémoire
+  // Contructeur utilisÃ© pour une piÃ¨ce de type chaÃ®ne en mÃ©moire
   public DBBuilderDynamicLibPiece(String pieceName, String actionName,
       String content, boolean traceMode, String className, String methodName)
       throws Exception {
@@ -95,6 +95,6 @@ public class DBBuilderDynamicLibPiece extends DBBuilderPiece {
   }
 
   public void cacheIntoDB(String _package, int _itemOrder) throws Exception {
-    // rien à cacher pour une proc dynamique
+    // rien Ã  cacher pour une proc dynamique
   }
 }

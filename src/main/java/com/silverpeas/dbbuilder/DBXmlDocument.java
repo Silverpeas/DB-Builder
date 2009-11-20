@@ -147,9 +147,9 @@ public class DBXmlDocument extends ApplicationBuilderItem {
    */
   public void loadFrom(InputStream xmlStream) throws AppBuilderException,
       IOException {
-    // Attention � la configuration HTTP ! (Proxy : sys. props.
+    // Attention à la configuration HTTP ! (Proxy : sys. props.
     // "http.proxy[Host|Port])
-    // pour acc�s au DOCTYPE
+    // pour accès au DOCTYPE
     try {
       SAXBuilder builder = new SAXBuilder(false);
       underlyingDocument = builder.build(xmlStream);
@@ -299,8 +299,8 @@ public class DBXmlDocument extends ApplicationBuilderItem {
   }
 
   /**
-   * Pour chaque élément à rechercher (tagsToFind) renvoie la valeur de
-   * l'attribut (attribute) ou de l'élément si l'attribut est null
+   * Pour chaque Ã©lÃ©ment Ã  rechercher (tagsToFind) renvoie la valeur de
+   * l'attribut (attribute) ou de l'Ã©lÃ©ment si l'attribut est null
    */
   public String[] getAttributeValues(String[] tagsToFind, String attribute)
       throws AppBuilderException {

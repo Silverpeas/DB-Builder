@@ -25,7 +25,7 @@ package com.silverpeas.dbbuilder;
 
 /**
  * Titre : dbBuilder Description : Builder des BDs Silverpeas Copyright :
- * Copyright (c) 2001 Société : Stratélia Silverpeas
+ * Copyright (c) 2001 SociÃ©tÃ© : StratÃ©lia Silverpeas
  * 
  * @author ATH
  * @version 1.0
@@ -33,7 +33,7 @@ package com.silverpeas.dbbuilder;
 
 public class DBBuilderSingleStatementPiece extends DBBuilderPiece {
 
-  // Contructeur utilisé pour une pièce de type fichier
+  // Contructeur utilisÃ© pour une piÃ¨ce de type fichier
   public DBBuilderSingleStatementPiece(String pieceName, String actionName,
       boolean traceMode) throws Exception {
 
@@ -41,7 +41,7 @@ public class DBBuilderSingleStatementPiece extends DBBuilderPiece {
     setInstructions();
   }
 
-  // Contructeur utilisé pour une pièce de type chaîne en mémoire
+  // Contructeur utilisÃ© pour une piÃ¨ce de type chaÃ®ne en mÃ©moire
   public DBBuilderSingleStatementPiece(String pieceName, String actionName,
       String content, boolean traceMode) throws Exception {
 
@@ -49,7 +49,7 @@ public class DBBuilderSingleStatementPiece extends DBBuilderPiece {
     setInstructions();
   }
 
-  // Contructeur utilisé pour une pièce stockée en base de données
+  // Contructeur utilisÃ© pour une piÃ¨ce stockÃ©e en base de donnÃ©es
   public DBBuilderSingleStatementPiece(String actionInternalID,
       String pieceName, String actionName, int itemOrder, boolean traceMode)
       throws Exception {

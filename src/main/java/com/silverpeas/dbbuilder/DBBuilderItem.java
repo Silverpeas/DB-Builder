@@ -27,7 +27,7 @@ package com.silverpeas.dbbuilder;
  * Titre :        dbBuilder
  * Description :  Builder des BDs Silverpeas
  * Copyright :    Copyright (c) 2001
- * Société :      Stratélia Silverpeas
+ * SociÃ©tÃ© :      StratÃ©lia Silverpeas
  * @author ATH
  * @version 1.0
  */
@@ -140,7 +140,8 @@ public abstract class DBBuilderItem {
           + "> tag found for this module into contribution file.");
 
     // ici correction ATH t005 05/06/2002
-    // il est autorisé qu'un tag apparaisse +sieurs fois : c'est necessaire pour
+    // il est autorisÃ© qu'un tag apparaisse +sieurs fois : c'est necessaire
+    // pour
     // <previous>
     // if (listeCurrent.size() != 1)
     // throw new Exception(getModule() + ": tag <" + b +

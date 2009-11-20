@@ -27,7 +27,7 @@ package com.silverpeas.dbbuilder;
  * Titre :        dbBuilder
  * Description :  Builder des BDs Silverpeas
  * Copyright :    Copyright (c) 2001
- * Société :      Stratélia Silverpeas
+ * SociÃ©tÃ© :      StratÃ©lia Silverpeas
  * @author ATH
  * @version 1.0
  */
@@ -52,7 +52,7 @@ public class DBBuilderDBItem extends DBBuilderItem {
     // lecture from base des items
     dbInfos = getContentFromDB();
 
-    // construit un fichier xml temporaire avec toutes les infos nécessaires
+    // construit un fichier xml temporaire avec toutes les infos nÃ©cessaires
     File f = new File(DBBuilder.getTemp() + File.separator + TEMP_DBCONTRIBUTION_FILE);
 
     if (!f.getParentFile().exists()) {

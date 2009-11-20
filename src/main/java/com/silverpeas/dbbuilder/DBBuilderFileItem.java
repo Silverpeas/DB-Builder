@@ -27,7 +27,7 @@ package com.silverpeas.dbbuilder;
  * Titre :        dbBuilder
  * Description :  Builder des BDs Silverpeas
  * Copyright :    Copyright (c) 2001
- * Société :      Stratélia Silverpeas
+ * SociÃ©tÃ© :      StratÃ©lia Silverpeas
  * @author ATH
  * @version 1.0
  */
@@ -43,7 +43,7 @@ public class DBBuilderFileItem extends DBBuilderItem {
 
 		setRoot( ((org.jdom.Document) fileXml.getDocument().clone()).getRootElement() ); // Get the root element
 
-		// récupère le nom du module une fois pour toutes
+		// rÃ©cupÃ¨re le nom du module une fois pour toutes
        		super.setModule(getRoot().getAttributeValue(MODULENAME_ATTRIB));
         }
 

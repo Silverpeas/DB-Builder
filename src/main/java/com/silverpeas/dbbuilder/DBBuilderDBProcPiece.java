@@ -25,7 +25,7 @@ package com.silverpeas.dbbuilder;
 
 /**
  * Titre : dbBuilder Description : Builder des BDs Silverpeas Copyright :
- * Copyright (c) 2001 Société : Stratélia Silverpeas
+ * Copyright (c) 2001 SociÃ©tÃ© : StratÃ©lia Silverpeas
  * 
  * @author ATH
  * @version 1.0
@@ -35,7 +35,7 @@ public class DBBuilderDBProcPiece extends DBBuilderPiece {
 
   private String dbProcName = null;
 
-  // contructeurs non utilisés
+  // contructeurs non utilisÃ©s
   private DBBuilderDBProcPiece(String pieceName, String actionName,
       boolean traceMode) throws Exception {
     super(pieceName, actionName, traceMode);
@@ -51,7 +51,7 @@ public class DBBuilderDBProcPiece extends DBBuilderPiece {
     super(actionInternalID, pieceName, actionName, itemOrder, traceMode);
   }
 
-  // Contructeur utilisé pour une pièce de type fichier
+  // Contructeur utilisÃ© pour une piÃ¨ce de type fichier
   public DBBuilderDBProcPiece(String fileName, String actionName,
       boolean traceMode, String dbProcName) throws Exception {
 
@@ -59,7 +59,7 @@ public class DBBuilderDBProcPiece extends DBBuilderPiece {
     moreInitialize(dbProcName);
   }
 
-  // Contructeur utilisé pour une pièce de type chaîne en mémoire
+  // Contructeur utilisÃ© pour une piÃ¨ce de type chaÃ®ne en mÃ©moire
   public DBBuilderDBProcPiece(String pieceName, String actionName,
       String content, boolean traceMode, String dbProcName) throws Exception {
 
@@ -67,7 +67,7 @@ public class DBBuilderDBProcPiece extends DBBuilderPiece {
     moreInitialize(dbProcName);
   }
 
-  // Contructeur utilisé pour une pièce stockée en base de données
+  // Contructeur utilisÃ© pour une piÃ¨ce stockÃ©e en base de donnÃ©es
   public DBBuilderDBProcPiece(String actionInternalID, String pieceName,
       String actionName, int itemOrder, boolean traceMode, String dbProcName)
       throws Exception {

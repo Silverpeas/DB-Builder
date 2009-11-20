@@ -25,11 +25,11 @@ package com.stratelia.dbConnector;
 
 public class DbProcParameter {
 
-  private boolean isOutParameter = false; // vrai pour un paramètre de sortie
-  private int parameterType; // Type du paramètre si paramètre de sortie
-  private Object parameterValue; // valeur du paramètre à utiliser pour un
+  private boolean isOutParameter = false; // vrai pour un paramÃ¨tre de sortie
+  private int parameterType; // Type du paramÃ¨tre si paramÃ¨tre de sortie
+  private Object parameterValue; // valeur du paramÃ¨tre Ã  utiliser pour un
 
-  // paramètre en entrée
+  // paramÃ¨tre en entrÃ©e
 
   public DbProcParameter(boolean _isOutParameter, int _parameterType,
       Object _parameterValue) {

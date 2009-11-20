@@ -25,7 +25,7 @@ package com.silverpeas.dbbuilder;
 
 /**
  * Titre : dbBuilder Description : Builder des BDs Silverpeas Copyright :
- * Copyright (c) 2001 Société : Stratélia Silverpeas
+ * Copyright (c) 2001 SociÃ©tÃ© : StratÃ©lia Silverpeas
  * 
  * @author ATH
  * @version 1.0

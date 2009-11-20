@@ -26,7 +26,7 @@ package com.silverpeas.dbbuilder.dbbuilder_dl;
 import java.sql.Connection;
 
 /**
- * Titre : Description : Copyright : Copyright (c) 2002 Société :
+ * Titre : Description : Copyright : Copyright (c) 2002 SociÃ©tÃ© :
  * 
  * @author
  * @version 1.0

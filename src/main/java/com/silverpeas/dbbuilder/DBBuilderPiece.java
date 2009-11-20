@@ -26,7 +26,6 @@ package com.silverpeas.dbbuilder;
 import java.io.File;
 import java.io.DataInputStream;
 import java.io.FileInputStream;
-import java.util.*;
 import java.lang.reflect.Method;
 
 import com.stratelia.dbConnector.DBConnexion;
@@ -35,42 +34,46 @@ import com.stratelia.dbConnector.DbProcParameter;
 import com.silverpeas.FileUtil.StringUtil;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Properties;
 
 public abstract class DBBuilderPiece {
 
   // identifiant unique pour toute la session
   private static Integer increment = new Integer(0);
-  // identifiant de la pièce si elle est stockée en base
+  // identifiant de la piÃ¨ce si elle est stockÃ©e en base
   private String actionInternalID = null;
-  // nom de la pièce ou du fichier
+  // nom de la piÃ¨ce ou du fichier
   private String pieceName = null;
-  // contenu initial de la pièce
+  // contenu initial de la piÃ¨ce
   private String content = null;
   // nom de l'action
   private String actionName = null;
   // oui ou non fonctionnement en mode trace
   private boolean traceMode = false;
-  // contenu interprété en séquence d'instructions
+  // contenu interprÃ©tÃ© en sÃ©quence d'instructions
   protected Instruction[] instructions = null;
 
-  // Contructeur utilisé pour une pièce de type fichier
+  // Contructeur utilisÃ© pour une piÃ¨ce de type fichier
   public DBBuilderPiece(String pieceName, String actionName, boolean traceMode)
       throws Exception {
 
-    // mémorise le mode trace
+    // mÃ©morise le mode trace
     this.traceMode = traceMode;
 
-    // mémorise l'action
+    // mÃ©morise l'action
     this.actionName = actionName;
 
-    // mémorise le nom de la piece = le nom du fichier
+    // mÃ©morise le nom de la piece = le nom du fichier
     this.pieceName = pieceName;
 
     // Charge le contenu sauf pour un package
     if (pieceName.endsWith(".jar")) {
       content = new String("");
     } else {
-      // charge son contenu sauf pour un jar qui doit être dans le classpath
+      // charge son contenu sauf pour un jar qui doit Ãªtre dans le classpath
       File myFile = new File(pieceName);
       if (!myFile.exists() || !myFile.isFile() || !myFile.canRead()) {
         DBBuilder.displayMessageln("\n\t\t***Unable to load : " + pieceName);
@@ -94,40 +97,40 @@ public abstract class DBBuilderPiece {
     }
   }
 
-  // Contructeur utilisé pour une pièce de type chaîne en mémoire
+  // Contructeur utilisÃ© pour une piÃ¨ce de type chaÃ®ne en mÃ©moire
   public DBBuilderPiece(String pieceName, String actionName, String content,
       boolean traceMode) throws Exception {
 
-    // mémorise le mode trace
+    // mÃ©morise le mode trace
     this.traceMode = traceMode;
 
-    // mémorise l'action
+    // mÃ©morise l'action
     this.actionName = actionName;
 
-    // mémorise le nom du fichier
+    // mÃ©morise le nom du fichier
     this.pieceName = pieceName;
 
-    // mémorise le contenu
+    // mÃ©morise le contenu
     this.content = content;
   }
 
-  // Contructeur utilisé pour une pièce stockée en base de données
+  // Contructeur utilisÃ© pour une piÃ¨ce stockÃ©e en base de donnÃ©es
   public DBBuilderPiece(String actionInternalID, String pieceName,
       String actionName, int itemOrder, boolean traceMode) throws Exception {
 
-    // mémorise le mode trace
+    // mÃ©morise le mode trace
     this.traceMode = traceMode;
 
-    // mémorise l'action
+    // mÃ©morise l'action
     this.actionName = actionName;
 
-    // mémorise le nom du fichier
+    // mÃ©morise le nom du fichier
     this.pieceName = pieceName;
 
-    // mémorise l'ID interne de la base
+    // mÃ©morise l'ID interne de la base
     this.actionInternalID = actionInternalID;
 
-    // charge et mémorise le contenu
+    // charge et mÃ©morise le contenu
     this.content = getContentFromDB(actionInternalID);
   }
 
@@ -151,7 +154,7 @@ public abstract class DBBuilderPiece {
    */
   public String getContent() {
 
-    // retourne le contenu chargé
+    // retourne le contenu chargÃ©
     return content;
   }
 
@@ -181,7 +184,7 @@ public abstract class DBBuilderPiece {
     }
   }
 
-  // Execute via JDBC la séquence d'instructions élémentaires conservées sur
+  // Execute via JDBC la sÃ©quence d'instructions Ã©lÃ©mentaires conservÃ©es sur
   // instructions[]
   public void executeInstructions() throws Exception {
 
@@ -212,8 +215,8 @@ public abstract class DBBuilderPiece {
     // } // try
   }
 
-  // Cache en BD via JDBC une séquence de désinstallation
-  // le paramètre est la liste des valeurs à insérer dans la table
+  // Cache en BD via JDBC une sÃ©quence de dÃ©sinstallation
+  // le paramÃ¨tre est la liste des valeurs Ã  insÃ©rer dans la table
   // SR_UNINSTITEMS
   public void cacheIntoDB(String _package, int _itemOrder, String _pieceType,
       String _delimiter, Integer _keepDelimiter, String _dbProcName)

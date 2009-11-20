@@ -21,7 +21,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-// reprise à l'identique sauf nom de package de com.stratelia.silverpeas.util.jcrypt
 
 package com.silverpeas.dbbuilder_ep;
 
