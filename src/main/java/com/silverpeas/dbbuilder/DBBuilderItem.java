@@ -40,8 +40,6 @@ import java.util.Iterator;
 import java.util.List;
 import org.jdom.Element;
 
-
-
 public abstract class DBBuilderItem {
 
   static public final String MODULENAME_ATTRIB = "product";
@@ -126,8 +124,8 @@ public abstract class DBBuilderItem {
       }
       rs.close();
       pstmt.close();
-    } catch(SQLException sqlex){
-    }finally {
+    } catch (SQLException sqlex) {
+    } finally {
       if (connection != null) {
         connection.close();
       }

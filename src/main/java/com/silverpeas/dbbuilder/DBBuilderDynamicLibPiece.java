@@ -80,7 +80,6 @@ public class DBBuilderDynamicLibPiece extends DBBuilderPiece {
     setInstructions();
   }
 
-
   public void setInstructions() {
     instructions = new Instruction[1];
     instructions[0] = new Instruction(Instruction.IN_INVOKEJAVA, methodName,

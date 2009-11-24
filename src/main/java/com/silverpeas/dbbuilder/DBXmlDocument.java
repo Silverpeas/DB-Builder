@@ -62,7 +62,7 @@ public class DBXmlDocument extends ApplicationBuilderItem {
   public static final String ATT_MODULE_ID = "id";
 
   private XMLOutputter outputter = null;
-  
+
   /**
    * @since 1.0
    */

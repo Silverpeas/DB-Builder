@@ -157,7 +157,7 @@ public abstract class DBBuilderPiece {
 
   public abstract void setInstructions();
 
-  public abstract void cacheIntoDB(Connection connection,String _package, int _itemOrder)
+  public abstract void cacheIntoDB(Connection connection, String _package, int _itemOrder)
       throws Exception;
 
   public Instruction[] getInstructions() {
@@ -233,7 +233,7 @@ public abstract class DBBuilderPiece {
     } finally {
       if (pstmt != null) {
         pstmt.close();
-      }      
+      }
     }
   }
 
@@ -286,13 +286,13 @@ public abstract class DBBuilderPiece {
           + currentInstruction + "()");
     }
     ((DbBuilderDynamicPart) myClass).setConnection(connection);
-    Method methode = myClass.getClass().getMethod(currentInstruction, new Class[]{});
+    Method methode = myClass.getClass().getMethod(currentInstruction, new Class[] {});
     if (methode == null) {
       throw new Exception("No method \"" + currentInstruction
           + "\" defined for \"" + myClass.getClass().getName() + "\" class.");
     }
     try {
-      methode.invoke(myClass, new Class[]{});
+      methode.invoke(myClass, new Class[] {});
     } catch (Exception e) {
       throw new Exception("\n\t\t***ERROR RETURNED BY THE JVM : "
           + e.getMessage());
@@ -341,15 +341,15 @@ public abstract class DBBuilderPiece {
           "SR_SCRIPTS where SR_ITEM_ID = ? order by 1");
       pstmt.setString(1, itemID);
       ResultSet rs = pstmt.executeQuery();
-      while(rs.next()) {
-         dbContent = dbContent.append(rs.getString("SR_TEXT"));
+      while (rs.next()) {
+        dbContent = dbContent.append(rs.getString("SR_TEXT"));
       }
       rs.close();
       pstmt.close();
     } catch (Exception e) {
       throw new Exception("\n\t\t***ERROR RETURNED BY THE JVM : "
           + e.getMessage() + "\n\t\t\t(" + "select SR_SEQ_NUM, SR_TEXT from " +
-          "SR_SCRIPTS where SR_ITEM_ID = '"+ itemID +"'  order by 1" + ")");
+          "SR_SCRIPTS where SR_ITEM_ID = '" + itemID + "'  order by 1" + ")");
     }
     return dbContent.toString();
   }
