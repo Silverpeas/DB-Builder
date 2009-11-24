@@ -59,6 +59,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static com.silverpeas.dbbuilder.DBBuilderFileItem.*;
 
@@ -70,6 +72,8 @@ import static com.silverpeas.dbbuilder.DBBuilderFileItem.*;
  * @version 1.0
  */
 public class DBBuilder {
+
+
 
   static final String NEW_LINE = System.getProperty("line.separator");
   static Date TODAY = new java.util.Date();
@@ -104,27 +108,27 @@ public class DBBuilder {
   static public String login = " ";
   static public String passwd = " ";
   private static final String[] TAGS_TO_MERGE_4_INSTALL = {
-      DBBuilderFileItem.CREATE_TABLE_TAG,
-      DBBuilderFileItem.CREATE_INDEX_TAG,
-      DBBuilderFileItem.CREATE_CONSTRAINT_TAG,
-      DBBuilderFileItem.CREATE_DATA_TAG };
+    DBBuilderFileItem.CREATE_TABLE_TAG,
+    DBBuilderFileItem.CREATE_INDEX_TAG,
+    DBBuilderFileItem.CREATE_CONSTRAINT_TAG,
+    DBBuilderFileItem.CREATE_DATA_TAG};
   private static final String[] TAGS_TO_MERGE_4_UNINSTALL = {
-      DBBuilderFileItem.DROP_CONSTRAINT_TAG,
-      DBBuilderFileItem.DROP_INDEX_TAG,
-      DBBuilderFileItem.DROP_DATA_TAG,
-      DBBuilderFileItem.DROP_TABLE_TAG };
+    DBBuilderFileItem.DROP_CONSTRAINT_TAG,
+    DBBuilderFileItem.DROP_INDEX_TAG,
+    DBBuilderFileItem.DROP_DATA_TAG,
+    DBBuilderFileItem.DROP_TABLE_TAG};
   private static final String[] TAGS_TO_MERGE_4_ALL = {
-      DBBuilderFileItem.DROP_CONSTRAINT_TAG,
-      DBBuilderFileItem.DROP_INDEX_TAG,
-      DBBuilderFileItem.DROP_DATA_TAG,
-      DBBuilderFileItem.DROP_TABLE_TAG,
-      DBBuilderFileItem.CREATE_TABLE_TAG,
-      DBBuilderFileItem.CREATE_INDEX_TAG,
-      DBBuilderFileItem.CREATE_CONSTRAINT_TAG,
-      DBBuilderFileItem.CREATE_DATA_TAG };
+    DBBuilderFileItem.DROP_CONSTRAINT_TAG,
+    DBBuilderFileItem.DROP_INDEX_TAG,
+    DBBuilderFileItem.DROP_DATA_TAG,
+    DBBuilderFileItem.DROP_TABLE_TAG,
+    DBBuilderFileItem.CREATE_TABLE_TAG,
+    DBBuilderFileItem.CREATE_INDEX_TAG,
+    DBBuilderFileItem.CREATE_CONSTRAINT_TAG,
+    DBBuilderFileItem.CREATE_DATA_TAG};
   private static final String[] TAGS_TO_MERGE_4_OPTIMIZE = {
-      DBBuilderFileItem.DROP_INDEX_TAG,
-      DBBuilderFileItem.CREATE_INDEX_TAG };
+    DBBuilderFileItem.DROP_INDEX_TAG,
+    DBBuilderFileItem.CREATE_INDEX_TAG};
   private static final String DBREPOSITORY_SUBDIR = "dbRepository"; // entrée sur l'arborescence
   // dbRepository
   private static final String CONTRIB_FILES_SUBDIR = "data"; // sous répertoire data
@@ -165,6 +169,7 @@ public class DBBuilder {
    * @see
    */
   public static void main(String[] args) {
+    Logger.getLogger("org.springframework").setLevel(Level.SEVERE);
     new ClassPathXmlApplicationContext("classpath:/spring-jdbc-datasource.xml");
     try {
       // Ouverture des traces
@@ -337,8 +342,7 @@ public class DBBuilder {
             } else if (action.equals(ACTION_ENFORCE_UNINSTALL)) {
               if (p.equals(moduleName)) {
                 itemsList.add(0, p);
-              } else
-                ;
+              } else;
             } else {
               itemsList.add(0, p);
             }
@@ -349,8 +353,7 @@ public class DBBuilder {
           if (action.equals(ACTION_ENFORCE_UNINSTALL)) {
             if (moduleName.equals("dbbuilder")) {
               itemsList.add(itemsList.size(), "dbbuilder");
-            } else
-              ;
+            } else;
           } else {
             itemsList.add(itemsList.size(), "dbbuilder");
           }
@@ -414,11 +417,11 @@ public class DBBuilder {
 
     String usage =
         new String(
-            "DBBuilder usage: DBBuilder <action> -T <Targeted DB Server type> -D <JDBC Driver> -d <Datasource> -l <user login> -p <user Password> [-v(erbose)] [-s(imulate)]\n"
-                + "where <action> == -C(onnection only) | -I(nstall only) | -U(ninstall only) | -O(ptimize only) | -A(ll) | -S(tatus) | -FU(Force Uninstall) <module> \n "
-                + // "where <action> == -C(onnection only) | -I(nstall only) | -U(ninstall only) | -O(ptimize only) | -A(ll) | -S(tatus) | -FU(Force Uninstall) <module> | -CI(Contraints Install) | -CU(Constraints Unistall)\n"
-                // +
-                "      <Targeted DB Server type> == MSSQL | ORACLE | POSTGRES\n");
+        "DBBuilder usage: DBBuilder <action> -T <Targeted DB Server type> -D <JDBC Driver> -d <Datasource> -l <user login> -p <user Password> [-v(erbose)] [-s(imulate)]\n"
+        + "where <action> == -C(onnection only) | -I(nstall only) | -U(ninstall only) | -O(ptimize only) | -A(ll) | -S(tatus) | -FU(Force Uninstall) <module> \n "
+        + // "where <action> == -C(onnection only) | -I(nstall only) | -U(ninstall only) | -O(ptimize only) | -A(ll) | -S(tatus) | -FU(Force Uninstall) <module> | -CI(Contraints Install) | -CU(Constraints Unistall)\n"
+        // +
+        "      <Targeted DB Server type> == MSSQL | ORACLE | POSTGRES\n");
 
     // Quelque chose à faire ?
     // if (args.length != 13) {
@@ -758,12 +761,11 @@ public class DBBuilder {
             blocks_merge[0] = new VersionTag(CURRENT_TAG, versionFile);
             // module nouvellement installé -> il faut stocker en base sa procedure de uninstall
             processesToCacheIntoDB.addInformation(dbbuilderItem.getModule(), package_name,
-                dbbuilderItem.
-                    getFileXml());
+                dbbuilderItem.getFileXml());
             // inscription du module en base
             sqlMetaInstructions.addInstruction(dbbuilderItem.getModule(),
                 "insert into SR_PACKAGES(SR_PACKAGE, SR_VERSION) values ('"
-                    + package_name + "', '" + versionFile + "')");
+                + package_name + "', '" + versionFile + "')");
           } else {
             displayMessageln("\t" + package_name + " will be upgraded from " + versionDB + " to "
                 + versionFile + ".");
@@ -777,25 +779,22 @@ public class DBBuilder {
             }
             // module upgradé -> il faut stocker en base sa nouvelle procedure de uninstall
             processesToCacheIntoDB.addInformation(dbbuilderItem.getModule(), package_name,
-                dbbuilderItem.
-                    getFileXml());
+                dbbuilderItem.getFileXml());
 
             // desinscription du module en base
             sqlMetaInstructions.addInstruction(dbbuilderItem.getModule(),
                 "update SR_PACKAGES set SR_VERSION='" + versionFile
-                    + "' where SR_PACKAGE='" + package_name + "'");
+                + "' where SR_PACKAGE='" + package_name + "'");
             sqlMetaInstructions.addInstruction(dbbuilderItem.getModule(),
                 "delete from SR_DEPENDENCIES where SR_PACKAGE = '"
-                    + package_name + "'");
-            sqlMetaInstructions
-                .addInstruction(
-                    dbbuilderItem.getModule(),
-                    "delete from SR_SCRIPTS where SR_ITEM_ID IN (SELECT SRU.SR_ITEM_ID from SR_UNINSTITEMS SRU where SRU.SR_PACKAGE = '"
-                        +
-                        package_name + "')");
+                + package_name + "'");
+            sqlMetaInstructions.addInstruction(
+                dbbuilderItem.getModule(),
+                "delete from SR_SCRIPTS where SR_ITEM_ID IN (SELECT SRU.SR_ITEM_ID from SR_UNINSTITEMS SRU where SRU.SR_PACKAGE = '"
+                + package_name + "')");
             sqlMetaInstructions.addInstruction(dbbuilderItem.getModule(),
                 "delete from SR_UNINSTITEMS where SR_PACKAGE = '"
-                    + package_name + "'");
+                + package_name + "'");
           }
         } else if (getAction().equals(ACTION_OPTIMIZE)) {
           displayMessageln("\t" + package_name + " will be optimized.");
@@ -825,16 +824,14 @@ public class DBBuilder {
           System.out.println("delete from SR_");
           sqlMetaInstructions.addInstruction(pdbbuilderItem.getModule(),
               "delete from SR_DEPENDENCIES where SR_PACKAGE = '"
-                  + package_name + "'");
-          sqlMetaInstructions
-              .addInstruction(
-                  pdbbuilderItem.getModule(),
-                  "delete from SR_SCRIPTS where SR_ITEM_ID IN (SELECT SRU.SR_ITEM_ID from SR_UNINSTITEMS SRU where SRU.SR_PACKAGE = '"
-                      +
-                      package_name + "')");
+              + package_name + "'");
+          sqlMetaInstructions.addInstruction(
+              pdbbuilderItem.getModule(),
+              "delete from SR_SCRIPTS where SR_ITEM_ID IN (SELECT SRU.SR_ITEM_ID from SR_UNINSTITEMS SRU where SRU.SR_PACKAGE = '"
+              + package_name + "')");
           sqlMetaInstructions.addInstruction(pdbbuilderItem.getModule(),
               "delete from SR_UNINSTITEMS where SR_PACKAGE = '" + package_name
-                  + "'");
+              + "'");
           sqlMetaInstructions.addInstruction(pdbbuilderItem.getModule(),
               "delete from SR_PACKAGES where SR_PACKAGE='" + package_name + "'");
         }
@@ -1057,7 +1054,7 @@ public class DBBuilder {
     }
     List<String> sqlMetaInstructions =
         metaInstructions.getInstructions(moduleRoot.getAttributeValue(
-            DBXmlDocument.ATT_MODULE_ID));
+        DBXmlDocument.ATT_MODULE_ID));
     // Mise à jour des versions en base
     if (sqlMetaInstructions.size() == 0) {
       displayMessageln("\tdbbuilder meta base maintenance : (none)");

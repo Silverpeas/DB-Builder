@@ -41,8 +41,6 @@
     <property name="maxActive" value="4" />
     <property name="maxIdle" value="4" />
     <property name="maxWait" value="5000" />
-    <property name="removeAbandoned" value="true" />
-    <property name="removeAbandonedTimeout" value="5000" />
   </bean>
 
    <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
