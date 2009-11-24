@@ -46,7 +46,7 @@ public class DbBuilder_ep extends DbBuilderDynamicPart {
     try {
       PropertyResourceBundle propFile = (PropertyResourceBundle) PropertyResourceBundle
           .getBundle("com.stratelia.silverpeas.domains.domainSP", Locale
-              .getDefault());
+          .getDefault());
       m_PasswordEncryption = propFile
           .getString("database.SQLPasswordEncryption");
     } catch (Exception e) {

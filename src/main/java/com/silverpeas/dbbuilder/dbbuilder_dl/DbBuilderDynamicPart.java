@@ -27,7 +27,6 @@ import java.sql.Connection;
 
 /**
  * Titre : Description : Copyright : Copyright (c) 2002 Société :
- * 
  * @author
  * @version 1.0
  */

@@ -31,16 +31,22 @@ package com.silverpeas.dbbuilder;
  * @author ATH
  * @version 1.0
  */
-import com.stratelia.dbConnector.DBConnexion;
 
-
+import com.silverpeas.dbbuilder.sql.ConnectionFactory;
+import com.silverpeas.dbbuilder.sql.QueryExecutor;
 import java.io.File;
 import java.io.OutputStreamWriter;
 import java.io.FileOutputStream;
+import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 
 public class DBBuilderDBItem extends DBBuilderItem {
+
+  private static final  String SELECT_CONTENT_FROM_DB =
+        "select SR_ITEM_ID, SR_ACTION_TAG, SR_ITEM_ORDER, SR_FILE_NAME, SR_FILE_TYPE, SR_DELIMITER, " +
+        "SR_KEEP_DELIMITER, SR_DBPROC_NAME from SR_UNINSTITEMS where SR_PACKAGE = ? order by " +
+        "SR_ACTION_TAG, SR_ITEM_ORDER ";
 
   private List<Map<String, Object>> dbInfos;
   protected static final String TEMP_DBCONTRIBUTION_FILE = "temp-contribution.xml";
@@ -48,20 +54,16 @@ public class DBBuilderDBItem extends DBBuilderItem {
   public DBBuilderDBItem(String module) throws Exception {
 
     super.setModule(module);
-
     // lecture from base des items
     dbInfos = getContentFromDB();
-
     // construit un fichier xml temporaire avec toutes les infos nécessaires
     File f = new File(DBBuilder.getTemp() + File.separator + TEMP_DBCONTRIBUTION_FILE);
-
     if (!f.getParentFile().exists()) {
       f.getParentFile().mkdirs();
     }
+    OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(f), "UTF-8");
 
-    OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(DBBuilder.getTemp() + File.separator + TEMP_DBCONTRIBUTION_FILE), "ISO8859-1");
-
-    out.write("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n");
+    out.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
     out.write("<" + CONTRIBUTION_TAG + " " + MODULENAME_ATTRIB + "=\"" + module + "\">\n");
 
     if (dbInfos != null) {
@@ -72,7 +74,8 @@ public class DBBuilderDBItem extends DBBuilderItem {
           Map<String, Object> h = dbInfos.get(i);
           String tag = (String) h.get("SR_ACTION_TAG");
           out.write("        <" + tag + ">\n");
-          out.write("            <" + ROW_TAG + " " + FILENAME_ATTRIB + "=\"" + (String) h.get("SR_ITEM_ID") + "\" ");
+          out.write("            <" + ROW_TAG + " " + FILENAME_ATTRIB + "=\"" +
+              (String) h.get("SR_ITEM_ID") + "\" ");
           valueHash = h.get("SR_ITEM_ORDER").toString();
 
           out.write(DBORDER_ATTRIB + "=\"" + new Integer(valueHash) + "\" ");
@@ -108,11 +111,13 @@ public class DBBuilderDBItem extends DBBuilderItem {
     out.write("</contribution>\n");
     out.close();
 
-    DBXmlDocument destXml = new DBXmlDocument(new File(DBBuilder.getTemp()), TEMP_DBCONTRIBUTION_FILE);
+    DBXmlDocument destXml =
+        new DBXmlDocument(new File(DBBuilder.getTemp()), TEMP_DBCONTRIBUTION_FILE);
     destXml.load();
 
     setFileXml(destXml);
-    setRoot(((org.jdom.Document) destXml.getDocument().clone()).getRootElement()); // Get the root element
+    setRoot(((org.jdom.Document) destXml.getDocument().clone()).getRootElement()); // Get the root
+    // element
   }
 
   @Override
@@ -124,15 +129,19 @@ public class DBBuilderDBItem extends DBBuilderItem {
   }
 
   private List<Map<String, Object>> getContentFromDB() throws Exception {
-
-    String selectContentFromDB = "select SR_ITEM_ID, SR_ACTION_TAG, SR_ITEM_ORDER, SR_FILE_NAME, SR_FILE_TYPE, SR_DELIMITER, SR_KEEP_DELIMITER, SR_DBPROC_NAME from SR_UNINSTITEMS where SR_PACKAGE = '" + getModule() + "' order by SR_ACTION_TAG, SR_ITEM_ORDER ";
+    Connection connexion = null;
     List<Map<String, Object>> infos = null;
     try {
-      infos = DBConnexion.getInstance().executeLoopQuery(selectContentFromDB);
+      connexion = ConnectionFactory.getConnection();     
+      infos = QueryExecutor.executeLoopQuery(connexion, SELECT_CONTENT_FROM_DB, new Object[]{getModule()});
     } catch (Exception e) {
-      throw new Exception("\n\t\t***ERROR RETURNED BY THE JVM : " + e.getMessage() + "\n\t\t\t(" + selectContentFromDB + ")");
+      throw new Exception("\n\t\t***ERROR RETURNED BY THE JVM : " + e.getMessage() + "\n\t\t\t(" +
+          SELECT_CONTENT_FROM_DB + ")");
+    }finally {
+      if(connexion != null) {
+        connexion.close();
+      }
     }
-
     return infos;
   }
 }

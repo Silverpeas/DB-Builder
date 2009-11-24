@@ -21,29 +21,41 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.silverpeas.dbbuilder;
+package com.silverpeas.dbbuilder.sql;
 
-import java.util.HashMap;
+import java.sql.Connection;
+import java.sql.SQLException;
+import javax.sql.DataSource;
 
 /**
- * Titre : dbBuilder Description : Builder des BDs Silverpeas Copyright :
- * Copyright (c) 2001 Société : Stratélia Silverpeas
- * 
- * @author ATH
- * @version 1.0
+ * @author ehugonnet
  */
+public class ConnectionFactory {
 
-public class Orderer {
+  private DataSource datasource;
+  private static ConnectionFactory instance;
 
-  public Orderer() {
+  private ConnectionFactory() {
   }
 
-  /*
-   * ordonne les éléments d'un HashMap structurée comme suit : pour chaque
-   * item, la clé est le nom de l'item, et la valeur un vecteur de string
-   * d'items prioritaires
+  public static final ConnectionFactory getInstance() {
+    synchronized (ConnectionFactory.class) {
+      if (instance == null) {
+        instance = new ConnectionFactory();
+      }
+    }
+    return instance;
+  }
+
+  /**
+   * @param datasource the datasource to set
    */
-  public static HashMap order(HashMap hOri) {
-    return null;
+  public void setDatasource(DataSource datasource) {
+    this.datasource = datasource;
   }
+
+  public static Connection getConnection() throws SQLException {
+    return instance.datasource.getConnection();
+  }
+
 }

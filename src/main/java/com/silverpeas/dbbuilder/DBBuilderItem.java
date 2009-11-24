@@ -31,11 +31,16 @@ package com.silverpeas.dbbuilder;
  * @author ATH
  * @version 1.0
  */
+import com.silverpeas.dbbuilder.sql.ConnectionFactory;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Iterator;
+import java.util.List;
+import org.jdom.Element;
 
-import com.stratelia.dbConnector.DBConnexion;
 
-import org.jdom.*;
-import java.util.*;
 
 public abstract class DBBuilderItem {
 
@@ -45,7 +50,6 @@ public abstract class DBBuilderItem {
   static public final String VERSION_ATTRIB = "version";
   static public final String NOTINSTALLED = "xxx";
   static public final String CONTRIBUTION_TAG = "contribution";
-
   static public final String CREATE_TABLE_TAG = "create_table";
   static public final String CREATE_INDEX_TAG = "create_index";
   static public final String CREATE_CONSTRAINT_TAG = "create_constraint";
@@ -54,7 +58,6 @@ public abstract class DBBuilderItem {
   static public final String DROP_INDEX_TAG = "drop_index";
   static public final String DROP_CONSTRAINT_TAG = "drop_constraint";
   static public final String DROP_DATA_TAG = "clean";
-
   static public final String FILE_TAG = "file";
   static public final String ROW_TAG = "row";
   static public final String FILENAME_ATTRIB = "name";
@@ -65,18 +68,14 @@ public abstract class DBBuilderItem {
   static public final String FILECLASSNAME_ATTRIB = "classname";
   static public final String FILEMETHODNAME_ATTRIB = "methodname";
   static public final String DBORDER_ATTRIB = "sequence";
-
   // static public final String FILEATTRIB_ATTRIB = "attrib";
-
   static public final String FILEATTRIBSTATEMENT_VALUE = "sqlstatement";
   static public final String FILEATTRIBSEQUENCE_VALUE = "sqlstatementlist";
   static public final String FILEATTRIBDBPROC_VALUE = "dbprocedure";
   static public final String FILEATTRIBJAVALIB_VALUE = "javalib";
-
   private String module = null;
   protected String versionFromFile = null;
   private String versionFromDB = null;
-
   private DBXmlDocument fileXml;
   private Element root;
 
@@ -108,62 +107,56 @@ public abstract class DBBuilderItem {
 
   public String getVersionFromDB() throws Exception {
     if (versionFromDB == null) {
-      String statement = "select SR_VERSION as version from SR_PACKAGES where SR_PACKAGE = '"
-          + getModule() + "'";
-      HashMap h = new HashMap();
-      try {
-        h = DBConnexion.getInstance().executeQuery(statement);
-      } catch (Exception e) {
-      }
-
-      if (h.containsKey("VERSION")) // ORACLE
-      {
-        versionFromDB = (String) h.get("VERSION");
-      } else if (h.containsKey("version")) // POSTGRES-MSSQL
-        versionFromDB = (String) h.get("version");
-
-      else
-        versionFromDB = NOTINSTALLED;
-    } // if
+      versionFromDB = extractVersionFromDatabase();
+    }
     return versionFromDB;
   }
 
-  public Element getUniqueBlock(String b, String v) throws Exception {
-
-    List listeCurrent = getRoot().getChildren(b);
-
-    if (listeCurrent == null)
-      throw new Exception(getModule() + ": no <" + b
-          + "> tag found for this module into contribution file.");
-    if (listeCurrent.size() == 0)
-      throw new Exception(getModule() + ": no <" + b
-          + "> tag found for this module into contribution file.");
-
-    // ici correction ATH t005 05/06/2002
-    // il est autorisé qu'un tag apparaisse +sieurs fois : c'est necessaire
-    // pour
-    // <previous>
-    // if (listeCurrent.size() != 1)
-    // throw new Exception(getModule() + ": tag <" + b +
-    // "> appears more than one.");
-
-    Iterator iterCurrent = listeCurrent.iterator();
-    Element myElement = null;
-
-    while (iterCurrent.hasNext()) {
-
-      Element eltCurrent = (Element) iterCurrent.next();
-      if (eltCurrent.getAttributeValue(DBBuilderFileItem.VERSION_ATTRIB)
-          .equals(v))
-        myElement = eltCurrent;
-    } // while
-
-    if (myElement == null)
-      throw new Exception(getModule() + ": no version <" + v + "> for <" + b
-          + "> tag found for this module into contribution file.");
-
-    return myElement;
-
+  private String extractVersionFromDatabase() throws SQLException {
+    Connection connection = null;
+    String version = NOTINSTALLED;
+    try {
+      connection = ConnectionFactory.getConnection();
+      PreparedStatement pstmt = connection.prepareStatement(
+          "SELECT SR_VERSION FROM SR_PACKAGES where SR_PACKAGE = ?");
+      pstmt.setString(1, module);
+      ResultSet rs = pstmt.executeQuery();
+      if (rs.next()) {
+        version = rs.getString("SR_VERSION");
+      }
+      rs.close();
+      pstmt.close();
+    } catch(SQLException sqlex){
+    }finally {
+      if (connection != null) {
+        connection.close();
+      }
+    }
+    return version;
   }
 
+  public Element getUniqueBlock(String b, String v) throws Exception {
+    List listeCurrent = getRoot().getChildren(b);
+    if (listeCurrent == null) {
+      throw new Exception(getModule() + ": no <" + b
+          + "> tag found for this module into contribution file.");
+    }
+    if (listeCurrent.size() == 0) {
+      throw new Exception(getModule() + ": no <" + b
+          + "> tag found for this module into contribution file.");
+    }
+    Iterator iterCurrent = listeCurrent.iterator();
+    Element myElement = null;
+    while (iterCurrent.hasNext()) {
+      Element eltCurrent = (Element) iterCurrent.next();
+      if (eltCurrent.getAttributeValue(DBBuilderFileItem.VERSION_ATTRIB).equals(v)) {
+        myElement = eltCurrent;
+      }
+    } // while
+    if (myElement == null) {
+      throw new Exception(getModule() + ": no version <" + v + "> for <" + b
+          + "> tag found for this module into contribution file.");
+    }
+    return myElement;
+  }
 }

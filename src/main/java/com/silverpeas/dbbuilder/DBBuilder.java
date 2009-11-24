@@ -21,7 +21,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 /**
  * Titre :        dbBuilder
  * Description :  Builder des BDs Silverpeas
@@ -34,22 +33,46 @@
  */
 package com.silverpeas.dbbuilder;
 
-import java.io.*;
-import java.util.*;
-import org.jdom.*;
-import com.stratelia.dbConnector.DBConnexion;
-import com.silverpeas.FileUtil.*;
+import com.silverpeas.FileUtil.FileUtil;
+import com.silverpeas.FileUtil.StringUtil;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import org.jdom.Element;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import com.silverpeas.dbbuilder.sql.ConnectionFactory;
+import com.silverpeas.dbbuilder.sql.FileInformation;
+import com.silverpeas.dbbuilder.sql.MetaInstructions;
+import com.silverpeas.dbbuilder.sql.UninstallInformations;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+import static com.silverpeas.dbbuilder.DBBuilderFileItem.*;
 
 /**
  * @Description :
- *
- * @Copyright   : Copyright (c) 2001
- * @Société     : Silverpeas
+ * @Copyright : Copyright (c) 2001
+ * @Société : Silverpeas
  * @author STR
  * @version 1.0
  */
 public class DBBuilder {
 
+  static final String NEW_LINE = System.getProperty("line.separator");
+  static Date TODAY = new java.util.Date();
   // Version application
   public static final String DBBuilderAppVersion = "V5";
   // Params
@@ -59,8 +82,8 @@ public class DBBuilder {
   private static String userName = null;
   private static String password = null;
   private static String action = null;
-  private static Boolean verbose = null;
-  private static Boolean simulate = null;
+  private static boolean verbose;
+  private static boolean simulate;
   private static String moduleName = null;
   // Installation
   private static final String HOME_KEY = "dbbuilder.home";
@@ -70,8 +93,6 @@ public class DBBuilder {
   // Fichier log
   protected static File fileLog = null;
   protected static PrintWriter bufLog = null;
-  // session SQL
-  private static DBConnexion con;
   static public final String CREATE_TABLE_TAG = "create_table";
   static public final String CREATE_INDEX_TAG = "create_index";
   static public final String CREATE_CONSTRAINT_TAG = "create_constraint";
@@ -104,7 +125,8 @@ public class DBBuilder {
   private static final String[] TAGS_TO_MERGE_4_OPTIMIZE = {
     DBBuilderFileItem.DROP_INDEX_TAG,
     DBBuilderFileItem.CREATE_INDEX_TAG};
-  private static final String DBREPOSITORY_SUBDIR = "dbRepository"; // entrée sur l'arborescence dbRepository
+  private static final String DBREPOSITORY_SUBDIR = "dbRepository"; // entrée sur l'arborescence
+  // dbRepository
   private static final String CONTRIB_FILES_SUBDIR = "data"; // sous répertoire data
   private static final String LOG_FILES_SUBDIR = "log"; // sous répertoire log
   private static final String TEMP_FILES_SUBDIR = "temp"; // sous répertoire temp
@@ -118,21 +140,24 @@ public class DBBuilder {
   private static final String ACTION_CONSTRAINTS_UNINSTALL = "-CU";
   private static final String ACTION_ENFORCE_UNINSTALL = "-FU";
   // Répertoire des DB Contribution Files
-  private static final String DIR_CONTRIBUTIONFILESROOT = getHome() +
-      File.separator + DBREPOSITORY_SUBDIR + File.separator + CONTRIB_FILES_SUBDIR;
+  private static final String DIR_CONTRIBUTIONFILESROOT = getHome()
+      + File.separator + DBREPOSITORY_SUBDIR + File.separator + CONTRIB_FILES_SUBDIR;
   // Répertoire racine des DB Pieces Contribution File
-  private static final String DIR_DBPIECESFILESROOT = getHome() + File.separator + DBREPOSITORY_SUBDIR;
+  private static final String DIR_DBPIECESFILESROOT =
+      getHome() + File.separator + DBREPOSITORY_SUBDIR;
   // Répertoire temp
   private static final String DIR_TEMP = getHome() + File.separator + TEMP_FILES_SUBDIR;
   protected static final String FIRST_DBCONTRIBUTION_FILE = "dbbuilder-contribution.xml";
   protected static final String MASTER_DBCONTRIBUTION_FILE = "master-contribution.xml";
-  protected static final String REQUIREMENT_TAG = "requirement"; // pré requis à vérifier pour prise en comptes
-  protected static final String DEPENDENCY_TAG = "dependency"; // ordonnancement à vérifier pour prise en comptes
+  protected static final String REQUIREMENT_TAG = "requirement"; // pré requis à vérifier pour
+  // prise en comptes
+  protected static final String DEPENDENCY_TAG = "dependency"; // ordonnancement à vérifier pour
+  // prise en comptes
   protected static final String FILE_TAG = "file";
   protected static final String FILENAME_ATTRIB = "name";
   protected static final String PRODUCT_TAG = "product";
   protected static final String PRODUCTNAME_ATTRIB = "name";
-  //mes variables rajoutée
+  // mes variables rajoutée
   private static Properties dbBuilderResources = new Properties();
 
   /**
@@ -140,18 +165,23 @@ public class DBBuilder {
    * @see
    */
   public static void main(String[] args) {
-
+    new ClassPathXmlApplicationContext("classpath:/spring-jdbc-datasource.xml");
     try {
       // Ouverture des traces
-      System.out.println("Start Database build using Silverpeas DBBuilder v. " + DBBuilderAppVersion + " (" + new java.util.Date() + ").");
-      fileLog = new File(getHome() + File.separator + LOG_FILES_SUBDIR + File.separator + "DBBuilder.log");
+      System.out.println("Start Database build using Silverpeas DBBuilder v. "
+          + DBBuilderAppVersion + " (" + TODAY + ").");
+      fileLog =
+          new File(getHome() + File.separator + LOG_FILES_SUBDIR + File.separator + "DBBuilder.log");
+      fileLog.getParentFile().mkdirs();
       bufLog = new PrintWriter(new BufferedWriter(new FileWriter(fileLog.getAbsolutePath(), true)));
-      displayMessageln(System.getProperty("line.separator") + "************************************************************************");
-      displayMessageln("Start Database Build using Silverpeas DBBuilder v. " + DBBuilderAppVersion + " (" + new java.util.Date() + ").");
+      displayMessageln(NEW_LINE + "*************************************************************");
+      displayMessageln("Start Database Build using Silverpeas DBBuilder v. " + DBBuilderAppVersion
+          + " (" + TODAY + ").");
 
       // Lecture des variables d'environnement à partir de dbBuilderSettings
       try {
-        dbBuilderResources.load(DBBuilder.class.getClassLoader().getResourceAsStream("com/stratelia/silverpeas/dbBuilder/settings/dbBuilderSettings.properties"));
+        dbBuilderResources.load(DBBuilder.class.getClassLoader().getResourceAsStream(
+            "com/stratelia/silverpeas/dbBuilder/settings/dbBuilderSettings.properties"));
       } catch (java.util.MissingResourceException e) {
         // fichier de ressources absent -> pas grave
         dbBuilderResources = null;
@@ -161,7 +191,7 @@ public class DBBuilder {
       // Lecture des paramètres d'entrée
       testParams(args);
 
-      if (simulate != null && simulate.booleanValue() && (dbType.equals("oracle") || dbType.equals("ORACLE"))) {
+      if (simulate && (dbType.equals("oracle") || dbType.equals("ORACLE"))) {
         throw new Exception("Simulate mode is not allowed for Oracle target databases.");
       }
 
@@ -173,32 +203,24 @@ public class DBBuilder {
       displayMessageln("\tAction        : " + action);
       displayMessageln("\tVerbose mode  : " + verbose);
       displayMessageln("\tSimulate mode : " + simulate);
-
-      // Chargement du pilote JDBC
-      Class.forName(jdbcDriver);
-      // Ouvre connexion JDBC
-      Properties props = new Properties();
-      props.put("user", userName); // L'ID du user à connecter à la source de données
-      props.put("password", password); // Le mot de passe du user à connecter à la base de données
-      con = DBConnexion.getInstance();
-      con.dbConnexionInitialize(dataSource, props);
       if (ACTION_CONNECT.equals(action)) {
         // un petit message et puis c'est tout
-        displayMessageln(System.getProperty("line.separator") + "Database successfully connected.");
-        System.out.println(System.getProperty("line.separator") + "Database successfully connected.");
+        displayMessageln(NEW_LINE + "Database successfully connected.");
+        System.out.println(NEW_LINE + "Database successfully connected.");
       } else {
         // Modules en place sur la BD avant install
-        displayMessageln(System.getProperty("line.separator") + "DB Status before build :");
-        Vector packagesIntoDB = new Vector();
-        packagesIntoDB = checkDBStatus();
+        displayMessageln(NEW_LINE + "DB Status before build :");
+        List<String> packagesIntoDB = checkDBStatus();
         // initialisation d'un vecteur des instructions SQL à passer en fin d'upgrade
         // pour mettre à niveau les versions de modules en base
-        Vector<String> sqlMetaInstructions = new Vector<String>();
+        MetaInstructions sqlMetaInstructions = new MetaInstructions();
         File dirXml = new File(getDBContributionDir());
         DBXmlDocument destXml = new DBXmlDocument(dirXml, MASTER_DBCONTRIBUTION_FILE);
         if (!destXml.getPath().exists()) {
           destXml.getPath().createNewFile();
-          BufferedWriter destXmlOut = new BufferedWriter(new FileWriter(destXml.getPath(), false));
+          BufferedWriter destXmlOut =
+              new BufferedWriter(new OutputStreamWriter(new FileOutputStream(destXml.getPath(),
+              false), "UTF-8"));
           destXmlOut.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
           destXmlOut.newLine();
           destXmlOut.write("<allcontributions>");
@@ -209,7 +231,7 @@ public class DBBuilder {
           destXmlOut.close();
         }
         destXml.load();
-        Vector processesToCacheIntoDB = new Vector();
+        UninstallInformations processesToCacheIntoDB = new UninstallInformations();
 
         File[] listeFileXml = dirXml.listFiles();
         Arrays.sort(listeFileXml);
@@ -218,11 +240,13 @@ public class DBBuilder {
 
         // Ouverture de tous les fichiers de configurations
 
-        displayMessageln(System.getProperty("line.separator") + "Ignored contribution files are :");
+        displayMessageln(NEW_LINE + "Ignored contribution files are :");
         int ignoredFiles = 0;
 
         for (File f : listeFileXml) {
-          if (f.isFile() && FileUtil.getExtension(f).equals("xml") && !(f.getName().equalsIgnoreCase(FIRST_DBCONTRIBUTION_FILE)) && !(f.getName().equalsIgnoreCase(MASTER_DBCONTRIBUTION_FILE))) {
+          if (f.isFile() && "xml".equals(FileUtil.getExtension(f))
+              && !(FIRST_DBCONTRIBUTION_FILE.equalsIgnoreCase(f.getName()))
+              && !(MASTER_DBCONTRIBUTION_FILE.equalsIgnoreCase(f.getName()))) {
             DBXmlDocument fXml = new DBXmlDocument(dirXml, f.getName());
             fXml.load();
             // vérification des dépendances
@@ -231,7 +255,8 @@ public class DBBuilder {
               displayMessageln("\t" + f.getName() + " (because of unresolved requirements).");
               ignoredFiles++;
             } else if (ACTION_ENFORCE_UNINSTALL.equals(action)) {
-              displayMessageln("\t" + f.getName() + " (because of " + ACTION_ENFORCE_UNINSTALL + " mode).");
+              displayMessageln("\t" + f.getName() + " (because of " + ACTION_ENFORCE_UNINSTALL
+                  + " mode).");
               ignoredFiles++;
             } else {
               listeDBXmlDocument.add(fXml);
@@ -253,7 +278,7 @@ public class DBBuilder {
         List<DBXmlDocument> orderedlisteDBXmlDocument = listeDBXmlDocument;
 
         int j = 0;
-        displayMessageln(System.getProperty("line.separator") + "Merged contribution files are :");
+        displayMessageln(NEW_LINE + "Merged contribution files are :");
         displayMessageln(action);
         if (!ACTION_ENFORCE_UNINSTALL.equals(action)) {
           displayMessageln("\t" + FIRST_DBCONTRIBUTION_FILE);
@@ -267,7 +292,7 @@ public class DBBuilder {
           displayMessageln("\t(none)");
         }
         // merge des diffrents fichiers de contribution éligibles :
-        displayMessageln(System.getProperty("line.separator") + "Build decisions are :");
+        displayMessageln(NEW_LINE + "Build decisions are :");
         // d'abord le fichier dbbuilder-contribution ...
         DBXmlDocument fileXml = null;
         if (!ACTION_ENFORCE_UNINSTALL.equals(action)) {
@@ -305,7 +330,8 @@ public class DBBuilder {
           String p = (String) iterPackagesIntoDB.next();
           if (!packagesIntoFile.containsKey(p)) {
             // Package en base et non en contribution -> candidat à desinstallation
-            if ("dbbuilder".equalsIgnoreCase(p)) // le module a desinstaller est dbbuilder, on le garde sous le coude pour le traiter en dernier
+            if ("dbbuilder".equalsIgnoreCase(p)) // le module a desinstaller est dbbuilder, on le
+            // garde sous le coude pour le traiter en dernier
             {
               foundDBBuilder = true;
             } else if (action.equals(ACTION_ENFORCE_UNINSTALL)) {
@@ -331,7 +357,7 @@ public class DBBuilder {
         Iterator iterItems = itemsList.iterator();
         while (iterItems.hasNext()) {
           String p = (String) iterItems.next();
-          displayMessageln( "**** Treating " + p + " ****");
+          displayMessageln("**** Treating " + p + " ****");
           DBBuilderDBItem tmpdbbuilderItem = new DBBuilderDBItem(p);
           mergeActionsToDo(tmpdbbuilderItem, destXml, processesToCacheIntoDB, sqlMetaInstructions);
         }
@@ -340,49 +366,42 @@ public class DBBuilder {
         destXml.setName("res.txt");
         destXml.save();
 
-        displayMessageln(System.getProperty("line.separator") + "Build parts are :");
+        displayMessageln(NEW_LINE + "Build parts are :");
 
         // Traitement des pièces sélectionnées
         // remarque : durant cette phase, les erreurs sont traitées -> on les catche en
         // retour sans les retraiter
         if (action.equals(ACTION_INSTALL)) {
           processDB(destXml, processesToCacheIntoDB, sqlMetaInstructions, TAGS_TO_MERGE_4_INSTALL);
-
-        } else if (action.equals(ACTION_UNINSTALL) || action.equals(ACTION_ENFORCE_UNINSTALL)) {
-
+        } else if (ACTION_UNINSTALL.equals(action) || ACTION_ENFORCE_UNINSTALL.equals(action)) {
           processDB(destXml, processesToCacheIntoDB, sqlMetaInstructions, TAGS_TO_MERGE_4_UNINSTALL);
-
-        } else if (action.equals(ACTION_OPTIMIZE)) {
-
+        } else if (ACTION_OPTIMIZE.equals(action)) {
           processDB(destXml, processesToCacheIntoDB, sqlMetaInstructions, TAGS_TO_MERGE_4_OPTIMIZE);
-
-        } else if (action.equals(ACTION_ALL)) {
-
+        } else if (ACTION_ALL.equals(action)) {
           processDB(destXml, processesToCacheIntoDB, sqlMetaInstructions, TAGS_TO_MERGE_4_ALL);
-
-        } else if (action.equals(ACTION_STATUS)) {
+        } else if (ACTION_STATUS.equals(action)) {
           // nothing to do
-        } else if (action.equals(ACTION_CONSTRAINTS_INSTALL)) {
+        } else if (ACTION_CONSTRAINTS_INSTALL.equals(action)) {
           // nothing to do
-        } else if (action.equals(ACTION_CONSTRAINTS_UNINSTALL)) {
+        } else if (ACTION_CONSTRAINTS_UNINSTALL.equals(action)) {
           // nothing to do
         }
         // Modules en place sur la BD en final
-        displayMessageln(System.getProperty("line.separator") + "Finally DB Status :");
+        displayMessageln(NEW_LINE + "Finally DB Status :");
         checkDBStatus();
 
       }
 
-      displayMessageln(System.getProperty("line.separator") + "Database build successfully done(" + new java.util.Date() + ").");
-      System.out.println(System.getProperty("line.separator") + "Database build successfully done (" + new java.util.Date() + ").");
+      displayMessageln(NEW_LINE + "Database build successfully done(" + TODAY + ").");
+      System.out.println(NEW_LINE + "Database build successfully done (" + TODAY + ").");
 
     } catch (Exception e) {
       e.printStackTrace();
       printError(e.getMessage(), e);
       displayMessageln(e.getMessage());
       // e.printStackTrace();
-      displayMessageln(System.getProperty("line.separator") + "Database build failed (" + new java.util.Date() + ").");
-      System.out.println(System.getProperty("line.separator") + "Database build failed (" + new java.util.Date() + ").");
+      displayMessageln(NEW_LINE + "Database build failed (" + TODAY + ").");
+      System.out.println(NEW_LINE + "Database build failed (" + TODAY + ").");
     } finally {
       bufLog.close();
     }
@@ -391,15 +410,18 @@ public class DBBuilder {
   // ---------------------------------------------------------------------
   private static void testParams(String[] args) throws Exception {
 
-    String usage = new String("DBBuilder usage: DBBuilder <action> -T <Targeted DB Server type> -D <JDBC Driver> -d <Datasource> -l <user login> -p <user Password> [-v(erbose)] [-s(imulate)]\n" +
-        "where <action> == -C(onnection only) | -I(nstall only) | -U(ninstall only) | -O(ptimize only) | -A(ll) | -S(tatus) | -FU(Force Uninstall) <module> \n " +
-        // "where <action> == -C(onnection only) | -I(nstall only) | -U(ninstall only) | -O(ptimize only) | -A(ll) | -S(tatus) | -FU(Force Uninstall) <module> | -CI(Contraints Install) | -CU(Constraints Unistall)\n" +
+    String usage =
+        new String(
+        "DBBuilder usage: DBBuilder <action> -T <Targeted DB Server type> -D <JDBC Driver> -d <Datasource> -l <user login> -p <user Password> [-v(erbose)] [-s(imulate)]\n"
+        + "where <action> == -C(onnection only) | -I(nstall only) | -U(ninstall only) | -O(ptimize only) | -A(ll) | -S(tatus) | -FU(Force Uninstall) <module> \n "
+        + // "where <action> == -C(onnection only) | -I(nstall only) | -U(ninstall only) | -O(ptimize only) | -A(ll) | -S(tatus) | -FU(Force Uninstall) <module> | -CI(Contraints Install) | -CU(Constraints Unistall)\n"
+        // +
         "      <Targeted DB Server type> == MSSQL | ORACLE | POSTGRES\n");
 
     // Quelque chose à faire ?
-//		if (args.length != 13) {
-//			printError(usage);
-//		}
+    // if (args.length != 13) {
+    // printError(usage);
+    // }
 
     boolean getDBType = false;
     boolean getDriver = false;
@@ -461,7 +483,9 @@ public class DBBuilder {
           throw new Exception();
         }
         getPassword = true;
-      } else if (curArg.equals("-C") || curArg.equals("-I") || curArg.equals("-U") || curArg.equals("-O") || curArg.equals("-A") || curArg.equals("-S") || curArg.equals("-CI") || curArg.equals("-CU") || curArg.equals("-FU")) {
+      } else if (curArg.equals("-C") || curArg.equals("-I") || curArg.equals("-U")
+          || curArg.equals("-O") || curArg.equals("-A") || curArg.equals("-S")
+          || curArg.equals("-CI") || curArg.equals("-CU") || curArg.equals("-FU")) {
         if (getDBType || getDataSource || getUserName || getPassword || getDriver || getModuleName) {
           printError(usage);
           throw new Exception();
@@ -479,23 +503,16 @@ public class DBBuilder {
           printError(usage);
           throw new Exception();
         }
-        if (verbose != null) {
-          printError(usage);
-          throw new Exception();
-        }
-        verbose = new Boolean(true);
+        verbose = true;
       } else if (curArg.equals("-s")) {
         if (getDBType || getDataSource || getUserName || getPassword || getDriver || getModuleName) {
           printError(usage);
           throw new Exception();
         }
-        if (simulate != null) {
-          printError(usage);
-          throw new Exception();
-        }
-        simulate = new Boolean(true);
+        simulate = true;
       } else {
-        if (!getDBType && !getDataSource && !getUserName && !getPassword && !getDriver && !getModuleName) {
+        if (!getDBType && !getDataSource && !getUserName && !getPassword && !getDriver
+            && !getModuleName) {
           printError(usage);
           throw new Exception();
         }
@@ -522,7 +539,8 @@ public class DBBuilder {
       }
     }
 
-    if (dbType == null || dataSource == null || userName == null || password == null || action == null) {
+    if (dbType == null || dataSource == null || userName == null || password == null
+        || action == null) {
       printError(usage);
       throw new Exception();
     }
@@ -531,19 +549,12 @@ public class DBBuilder {
       printError(usage);
       throw new Exception();
     }
-
-    if (verbose == null) {
-      verbose = new Boolean(false);
-    }
-    if (simulate == null) {
-      simulate = new Boolean(false);
-    }
-
+    verbose = false;
+    simulate = false;
   } // testParams(String[] args)
 
   // ---------------------------------------------------------------------
-
-   private static void printError(String errMsg, Exception ex) {
+  private static void printError(String errMsg, Exception ex) {
     printError(errMsg);
     if (bufLog != null) {
       ex.printStackTrace(bufLog);
@@ -553,23 +564,17 @@ public class DBBuilder {
 
   private static void printError(String errMsg) {
     if (bufLog != null) {
-      displayMessageln(System.getProperty("line.separator") + errMsg);
+      displayMessageln(NEW_LINE + errMsg);
       bufLog.close();
     }
-    System.out.println(System.getProperty("line.separator") + errMsg + System.getProperty("line.separator"));
-//		System.exit( 1 );
+    System.out.println(NEW_LINE + errMsg + NEW_LINE);
+  }
 
-  } // printError( String errMsg )
-
-  // ---------------------------------------------------------------------
   public static void displayMessageln(String msg) {
+    displayMessage(msg);
+    displayMessage(NEW_LINE);
+  }
 
-    // displayMessage(msg + "\n");
-    displayMessage(msg + System.getProperty("line.separator"));
-
-  } // displayMessageln( String msg )
-
-  // ---------------------------------------------------------------------
   private static void displayMessage(String msg) {
 
     if (bufLog != null) {
@@ -578,8 +583,7 @@ public class DBBuilder {
     } else {
       System.out.print(msg);
     }
-
-  } // displayMessage( String msg )
+  }
 
   // ---------------------------------------------------------------------
   private static boolean checkRequired(File[] listeFileXml, DBXmlDocument fXml) {
@@ -627,9 +631,9 @@ public class DBBuilder {
 
   // ---------------------------------------------------------------------
 
-  /* Construit une hashmap des dépendances (hDep) :
-  pour chaque item, la clé est le nom du produit (ie module), et la valeur un vecteur de string, chacun
-  étant le nom du produit en dépendance
+  /*
+   * Construit une hashmap des dépendances (hDep) : pour chaque item, la clé est le nom du produit
+   * (ie module), et la valeur un vecteur de string, chacun étant le nom du produit en dépendance
    */
   private static DBXmlDocument[] checkDependencies(List<DBXmlDocument> tfXml) {
     Map hDep = new HashMap();
@@ -643,7 +647,8 @@ public class DBBuilder {
         if (listeDependencies != null) {
           int j = 0;
           for (Element eltDependencies : listeDependencies) {
-            List<Element> listeDependencyFiles = (List<Element>) eltDependencies.getChildren(PRODUCT_TAG);
+            List<Element> listeDependencyFiles =
+                (List<Element>) eltDependencies.getChildren(PRODUCT_TAG);
             Iterator iterDependencyFiles = listeDependencyFiles.iterator();
             for (Element eltDependencyFile : listeDependencyFiles) {
               String name = eltDependencyFile.getAttributeValue(PRODUCTNAME_ATTRIB);
@@ -658,9 +663,9 @@ public class DBBuilder {
     return null;
   }
 
-  //---------------------------------------------------------------------
+  // ---------------------------------------------------------------------
   // Accesseurs
-  //---------------------------------------------------------------------
+  // ---------------------------------------------------------------------
   public static String getDbType() {
     return dbType;
   }
@@ -690,18 +695,19 @@ public class DBBuilder {
   }
 
   public static boolean getVerbose() {
-    return verbose.booleanValue();
+    return verbose;
   }
 
   public static boolean getSimulate() {
-    return simulate.booleanValue();
+    return simulate;
   }
 
   public static String getDBContributionDir() {
     return DIR_CONTRIBUTIONFILESROOT.concat(File.separator + getDbType());
   }
 
-  private static void mergeActionsToDo(DBBuilderItem pdbbuilderItem, DBXmlDocument xmlFile, Vector processesToCacheIntoDB, Vector<String> sqlMetaInstructions) {
+  private static void mergeActionsToDo(DBBuilderItem pdbbuilderItem, DBXmlDocument xmlFile,
+      UninstallInformations processesToCacheIntoDB, MetaInstructions sqlMetaInstructions) {
 
     String package_name = pdbbuilderItem.getModule();
     String versionDB = null;
@@ -713,50 +719,50 @@ public class DBBuilder {
       e.printStackTrace();
       return;
     }
-
     String[] tags_to_merge = null;
     VersionTag[] blocks_merge = null;
 
-    if (pdbbuilderItem.getClass().getName().equals("com.silverpeas.dbbuilder.DBBuilderFileItem")) {
-
+    if (pdbbuilderItem instanceof com.silverpeas.dbbuilder.DBBuilderFileItem) {
       DBBuilderFileItem dbbuilderItem = (DBBuilderFileItem) pdbbuilderItem;
-
       int iversionDB = -1;
       if (!versionDB.equals(DBBuilderFileItem.NOTINSTALLED)) {
         iversionDB = new Integer(versionDB).intValue();
       }
       int iversionFile = new Integer(versionFile).intValue();
-
       if (iversionDB == iversionFile) {
-        if (getAction().equals(ACTION_INSTALL) || getAction().equals(ACTION_UNINSTALL) || getAction().equals(ACTION_STATUS) || getAction().equals(ACTION_CONSTRAINTS_INSTALL) || getAction().equals(ACTION_CONSTRAINTS_UNINSTALL)) {
+        if (getAction().equals(ACTION_INSTALL) || getAction().equals(ACTION_UNINSTALL)
+            || getAction().equals(ACTION_STATUS) || getAction().equals(ACTION_CONSTRAINTS_INSTALL)
+            || getAction().equals(ACTION_CONSTRAINTS_UNINSTALL)) {
           displayMessageln("\t" + package_name + " is up to date with version " + versionFile + ".");
         } else {
-          displayMessageln("\t" + package_name + " is up to date with version " + versionFile + " and will be optimized.");
+          displayMessageln("\t" + package_name + " is up to date with version " + versionFile
+              + " and will be optimized.");
           tags_to_merge = TAGS_TO_MERGE_4_OPTIMIZE;
           blocks_merge = new VersionTag[1];
-          blocks_merge[0] = new VersionTag(DBBuilderFileItem.CURRENT_TAG, versionFile);
+          blocks_merge[0] = new VersionTag(CURRENT_TAG, versionFile);
         }
       } else if (iversionDB > iversionFile) {
-        displayMessageln("\t" + package_name + " will be ignored because this package is newer into DB than installed files.");
+        displayMessageln("\t" + package_name
+            + " will be ignored because this package is newer into DB than installed files.");
       } else {
-        if (getAction().equals(ACTION_INSTALL) || getAction().equals(ACTION_ALL) || getAction().equals(ACTION_STATUS) || getAction().equals(ACTION_CONSTRAINTS_INSTALL) || getAction().equals(ACTION_CONSTRAINTS_UNINSTALL)) {
+        if (getAction().equals(ACTION_INSTALL) || getAction().equals(ACTION_ALL)
+            || getAction().equals(ACTION_STATUS) || getAction().equals(ACTION_CONSTRAINTS_INSTALL)
+            || getAction().equals(ACTION_CONSTRAINTS_UNINSTALL)) {
           if (iversionDB == -1) {
-            displayMessageln("\t" + package_name + " will be installed with version " + versionFile + ".");
+            displayMessageln("\t" + package_name + " will be installed with version "
+                + versionFile + ".");
             tags_to_merge = TAGS_TO_MERGE_4_INSTALL;
-
             blocks_merge = new VersionTag[1];
-            blocks_merge[0] = new VersionTag(DBBuilderFileItem.CURRENT_TAG, versionFile);
-
+            blocks_merge[0] = new VersionTag(CURRENT_TAG, versionFile);
             // module nouvellement installé -> il faut stocker en base sa procedure de uninstall
-            Object[] o = new Object[2];
-            o[0] = package_name;
-            o[1] = dbbuilderItem.getFileXml();
-            processesToCacheIntoDB.add(o);
-
+            processesToCacheIntoDB.addInformation(dbbuilderItem.getModule(), package_name, dbbuilderItem.
+                getFileXml());
             // inscription du module en base
-            sqlMetaInstructions.add("insert into SR_PACKAGES(SR_PACKAGE, SR_VERSION) values ('" + package_name + "', '" + versionFile + "')");
+            sqlMetaInstructions.addInstruction(dbbuilderItem.getModule(), "insert into SR_PACKAGES(SR_PACKAGE, SR_VERSION) values ('"
+                + package_name + "', '" + versionFile + "')");
           } else {
-            displayMessageln("\t" + package_name + " will be upgraded from " + versionDB + " to " + versionFile + ".");
+            displayMessageln("\t" + package_name + " will be upgraded from " + versionDB + " to "
+                + versionFile + ".");
             tags_to_merge = TAGS_TO_MERGE_4_INSTALL;
 
             blocks_merge = new VersionTag[iversionFile - iversionDB];
@@ -765,18 +771,19 @@ public class DBBuilder {
               sversionFile = sversionFile.substring(sversionFile.length() - 3);
               blocks_merge[i] = new VersionTag(DBBuilderFileItem.PREVIOUS_TAG, sversionFile);
             }
-
             // module upgradé -> il faut stocker en base sa nouvelle procedure de uninstall
-            Object[] o = new Object[2];
-            o[0] = package_name;
-            o[1] = dbbuilderItem.getFileXml();
-            processesToCacheIntoDB.add(o);
+            processesToCacheIntoDB.addInformation(dbbuilderItem.getModule(), package_name, dbbuilderItem.
+                getFileXml());
 
             // desinscription du module en base
-            sqlMetaInstructions.add("update SR_PACKAGES set SR_VERSION='" + versionFile + "' where SR_PACKAGE='" + package_name + "'");
-            sqlMetaInstructions.add("delete from SR_DEPENDENCIES where SR_PACKAGE = '" + package_name + "'");
-            sqlMetaInstructions.add("delete from SR_SCRIPTS where SR_ITEM_ID IN (SELECT SRU.SR_ITEM_ID from SR_UNINSTITEMS SRU where SRU.SR_PACKAGE = '" + package_name + "')");
-            sqlMetaInstructions.add("delete from SR_UNINSTITEMS where SR_PACKAGE = '" + package_name + "'");
+            sqlMetaInstructions.addInstruction(dbbuilderItem.getModule(), "update SR_PACKAGES set SR_VERSION='" + versionFile
+                + "' where SR_PACKAGE='" + package_name + "'");
+            sqlMetaInstructions.addInstruction(dbbuilderItem.getModule(), "delete from SR_DEPENDENCIES where SR_PACKAGE = '"
+                + package_name + "'");
+            sqlMetaInstructions.addInstruction(dbbuilderItem.getModule(), "delete from SR_SCRIPTS where SR_ITEM_ID IN (SELECT SRU.SR_ITEM_ID from SR_UNINSTITEMS SRU where SRU.SR_PACKAGE = '"
+                + package_name + "')");
+            sqlMetaInstructions.addInstruction(dbbuilderItem.getModule(), "delete from SR_UNINSTITEMS where SR_PACKAGE = '"
+                + package_name + "'");
           }
         } else if (getAction().equals(ACTION_OPTIMIZE)) {
           displayMessageln("\t" + package_name + " will be optimized.");
@@ -795,19 +802,23 @@ public class DBBuilder {
         }
       }
 
+    } else if (pdbbuilderItem instanceof com.silverpeas.dbbuilder.DBBuilderDBItem) {
 
-    } else if (pdbbuilderItem.getClass().getName().equalsIgnoreCase("com.silverpeas.dbbuilder.DBBuilderDBItem")) {
-
-      if (getAction().equals(ACTION_UNINSTALL) || getAction().equals(ACTION_ALL) || getAction().equals(ACTION_ENFORCE_UNINSTALL)) {
+      if (getAction().equals(ACTION_UNINSTALL) || getAction().equals(ACTION_ALL)
+          || getAction().equals(ACTION_ENFORCE_UNINSTALL)) {
         displayMessageln("\t" + package_name + " will be uninstalled.");
         tags_to_merge = TAGS_TO_MERGE_4_UNINSTALL;
         // desinscription du module de la base
         if (!package_name.equalsIgnoreCase("dbbuilder")) {
           System.out.println("delete from SR_");
-          sqlMetaInstructions.add("delete from SR_DEPENDENCIES where SR_PACKAGE = '" + package_name + "'");
-          sqlMetaInstructions.add("delete from SR_SCRIPTS where SR_ITEM_ID IN (SELECT SRU.SR_ITEM_ID from SR_UNINSTITEMS SRU where SRU.SR_PACKAGE = '" + package_name + "')");
-          sqlMetaInstructions.add("delete from SR_UNINSTITEMS where SR_PACKAGE = '" + package_name + "'");
-          sqlMetaInstructions.add("delete from SR_PACKAGES where SR_PACKAGE='" + package_name + "'");
+          sqlMetaInstructions.addInstruction(pdbbuilderItem.getModule(), "delete from SR_DEPENDENCIES where SR_PACKAGE = '"
+              + package_name + "'");
+          sqlMetaInstructions.addInstruction(pdbbuilderItem.getModule(), "delete from SR_SCRIPTS where SR_ITEM_ID IN (SELECT SRU.SR_ITEM_ID from SR_UNINSTITEMS SRU where SRU.SR_PACKAGE = '"
+              + package_name + "')");
+          sqlMetaInstructions.addInstruction(pdbbuilderItem.getModule(), "delete from SR_UNINSTITEMS where SR_PACKAGE = '" + package_name
+              + "'");
+          sqlMetaInstructions.addInstruction(pdbbuilderItem.getModule(),
+              "delete from SR_PACKAGES where SR_PACKAGE='" + package_name + "'");
         }
         // construction du xml global des actions d'upgrade de la base
         if (tags_to_merge != null) {
@@ -820,287 +831,82 @@ public class DBBuilder {
       }
       displayMessageln("");
       displayMessageln("*** AVERTISSEMENT ***");
-      displayMessageln("\t Le Module " + package_name + " est présent en BD mais n'a pas de scripts SQL fichiers");
+      displayMessageln("\t Le Module " + package_name
+          + " est présent en BD mais n'a pas de scripts SQL fichiers");
       displayMessageln("");
       System.out.println("");
       System.out.println("*** AVERTISSEMENT ***");
-      System.out.println("Le Module " + package_name + " est présent en BD mais n'a pas de scripts SQL fichiers");
+      System.out.println("Le Module " + package_name
+          + " est présent en BD mais n'a pas de scripts SQL fichiers");
     }
 
   }
 
-  private static void processDB(DBXmlDocument xmlFile, Vector processesToCacheIntoDB,
-      Vector<String> sqlMetaInstructions, String[] tagsToProcess) throws Exception {
-
-    // Ouvre la transaction de MAJ
-    DBConnexion.getInstance().startTransaction();
-
-    try {
-      // ------------------------------------------
-      // ETAPE 1 : TRAITEMENT DES ACTIONS D'UPGRADE
-      // ------------------------------------------
-
-      // Get the root element
-      Element root = xmlFile.getDocument().getRootElement();
-
-      // piece de DB Builder
-      DBBuilderPiece p;
-
-      for (int i = 0; i < tagsToProcess.length; i++) {
-        // liste des pièces correspondant au i-eme tag a traiter
-        List listeTags = root.getChildren(tagsToProcess[i]);
-        int nbFiles = 0;
-
-        Iterator iterTags = listeTags.iterator();
-        while (iterTags.hasNext()) {
-          Element eltTag = (Element) iterTags.next();
-          String nomTag = eltTag.getName();
-
-          // -------------------------------------
-          // TRAITEMENT DES PIECES DE TYPE DB
-          // -------------------------------------
-          List listeRowFiles = eltTag.getChildren(DBBuilderItem.ROW_TAG);
-          Iterator iterRowFiles = listeRowFiles.iterator();
-          while (iterRowFiles.hasNext()) {
-            Element eltFile = (Element) iterRowFiles.next();
-            String name = eltFile.getAttributeValue(DBBuilderFileItem.FILENAME_ATTRIB);
-            String value = eltFile.getAttributeValue(DBBuilderFileItem.FILETYPE_ATTRIB);
-            Integer order = new Integer(eltFile.getAttributeValue(DBBuilderItem.DBORDER_ATTRIB));
-            String delimiter = eltFile.getAttributeValue(DBBuilderFileItem.FILEDELIMITER_ATTRIB);
-            String skeepdelimiter = eltFile.getAttributeValue(DBBuilderFileItem.FILEKEEPDELIMITER_ATTRIB);
-            String dbprocname = eltFile.getAttributeValue(DBBuilderFileItem.FILEDBPROCNAME_ATTRIB);
-            boolean keepdelimiter = (skeepdelimiter != null && skeepdelimiter.equals("YES"));
-            //String classname = eltFile.getAttributeValue( DBBuilderFileItem.FILECLASSNAME_ATTRIB );
-            //String methodname = eltFile.getAttributeValue( DBBuilderFileItem.FILEMETHODNAME_ATTRIB );
-
-            displayMessageln("\t" + tagsToProcess[i] + " : internal-id : " + name + "\t type : " + value);
-            nbFiles++;
-
-            if (value.equals(DBBuilderFileItem.FILEATTRIBSTATEMENT_VALUE)) {
-              // piece de type Single Statement
-              p = new DBBuilderSingleStatementPiece(name, name + "(" + order + ")", nomTag, order.intValue(), verbose.booleanValue());
-              // p.traceInstructions();
-              p.executeInstructions();
-            } else if (value.equals(DBBuilderFileItem.FILEATTRIBSEQUENCE_VALUE)) {
-              // piece de type Single Statement
-              p = new DBBuilderMultipleStatementPiece(name, name + "(" + order + ")", nomTag, order.intValue(), verbose.booleanValue(), delimiter, keepdelimiter);
-              // p.traceInstructions();
-              p.executeInstructions();
-            } else if (value.equals(DBBuilderFileItem.FILEATTRIBDBPROC_VALUE)) {
-              // piece de type Database Procedure
-              p = new DBBuilderDBProcPiece(name, name + "(" + order + ")", nomTag, order.intValue(), verbose.booleanValue(), dbprocname);
-              // p.traceInstructions();
-              p.executeInstructions();
-            }
-          }
-
-          // -------------------------------------
-          // TRAITEMENT DES PIECES DE TYPE FICHIER
-          // -------------------------------------
-          List listeFiles = eltTag.getChildren(DBBuilderFileItem.FILE_TAG);
-          Iterator iterFiles = listeFiles.iterator();
-          while (iterFiles.hasNext()) {
-            Element eltFile = (Element) iterFiles.next();
-            String name = eltFile.getAttributeValue(DBBuilderFileItem.FILENAME_ATTRIB);
-
-            if (File.separator.equals("/")) {
-              name = StringUtil.sReplace("\\", "/", name);
-            } else {
-              name = StringUtil.sReplace("/", "\\", name);
-            }
-
-            String value = eltFile.getAttributeValue(DBBuilderFileItem.FILETYPE_ATTRIB);
-            String delimiter = eltFile.getAttributeValue(DBBuilderFileItem.FILEDELIMITER_ATTRIB);
-            String skeepdelimiter = eltFile.getAttributeValue(DBBuilderFileItem.FILEKEEPDELIMITER_ATTRIB);
-            String dbprocname = eltFile.getAttributeValue(DBBuilderFileItem.FILEDBPROCNAME_ATTRIB);
-            boolean keepdelimiter = (skeepdelimiter != null && skeepdelimiter.equals("YES"));
-            String classname = eltFile.getAttributeValue(DBBuilderFileItem.FILECLASSNAME_ATTRIB);
-            String methodname = eltFile.getAttributeValue(DBBuilderFileItem.FILEMETHODNAME_ATTRIB);
-
-            displayMessageln("\t" + tagsToProcess[i] + " : name : " + name + "\t type : " + value);
-            nbFiles++;
-
-            if (value.equals(DBBuilderFileItem.FILEATTRIBSTATEMENT_VALUE)) {
-              // piece de type Single Statement
-              p = new DBBuilderSingleStatementPiece(DIR_DBPIECESFILESROOT + File.separator + name, nomTag, verbose.booleanValue());
-              //p.traceInstructions();
-              p.executeInstructions();
-
-            } else if (value.equals(DBBuilderFileItem.FILEATTRIBSEQUENCE_VALUE)) {
-
-              // piece de type Single Statement
-              p = new DBBuilderMultipleStatementPiece(DIR_DBPIECESFILESROOT + File.separator + name, nomTag, verbose.booleanValue(), delimiter, keepdelimiter);
-              // p.traceInstructions();
-              p.executeInstructions();
-
-            } else if (value.equals(DBBuilderFileItem.FILEATTRIBDBPROC_VALUE)) {
-
-              // piece de type Database Procedure
-              p = new DBBuilderDBProcPiece(DIR_DBPIECESFILESROOT + File.separator + name, nomTag, verbose.booleanValue(), dbprocname);
-              // p.traceInstructions();
-              p.executeInstructions();
-
-            } else if (value.equals(DBBuilderFileItem.FILEATTRIBJAVALIB_VALUE)) {
-
-              // piece de type Java invoke
-              p = new DBBuilderDynamicLibPiece(DIR_DBPIECESFILESROOT + File.separator + name, nomTag, verbose.booleanValue(), classname, methodname);
-              // p.traceInstructions();
-              p.executeInstructions();
-            }
-          }
+  private static void processDB(DBXmlDocument xmlFile, UninstallInformations processesToCacheIntoDB,
+      MetaInstructions sqlMetaInstructions, String[] tagsToProcess) throws Exception {
+    // ------------------------------------------
+    // ETAPE 1 : TRAITEMENT DES ACTIONS D'UPGRADE
+    // ------------------------------------------
+    // Get the root element
+    Element root = xmlFile.getDocument().getRootElement();
+    List<Element> modules = root.getChildren(DBXmlDocument.ELT_MODULE);
+    for (Element module : modules) {
+      Connection connection = null;
+      try {
+        connection = ConnectionFactory.getConnection();
+        connection.setAutoCommit(false);
+        processSQLFiles(connection, module, tagsToProcess, sqlMetaInstructions);
+        cacheIntoDb(connection, processesToCacheIntoDB.getInformations(module.getAttributeValue(
+            DBXmlDocument.ATT_MODULE_ID)));
+        if (simulate) {
+           connection.rollback();
+        } else {
+          connection.commit();
         }
-
-        if (nbFiles == 0) {
-          displayMessageln("\t" + tagsToProcess[i] + " : (none)");
+      } catch (Exception e) {
+        try {
+          if (connection != null) {
+            connection.rollback();
+          }
+        } catch (SQLException sqlex) {
+        }
+        throw e;
+      } finally {
+        try {
+          if (connection != null) {
+            connection.close();
+          }
+        } catch (SQLException sqlex) {
         }
       }
-
-      // Mise à jour des versions en base
-      if (sqlMetaInstructions.size() == 0) {
-        displayMessageln("\tdbbuilder meta base maintenance : (none)");
-      } else {
-        displayMessageln("\tdbbuilder meta base maintenance :");
-        String instructions = new String();
-        for (String instruction : sqlMetaInstructions) {
-          instructions = instructions.concat(instruction + "\nGO");
-        }
-        p = new DBBuilderMultipleStatementPiece("DBBuilder meta base", "DBBuilder meta base", instructions, verbose.booleanValue(), "\nGO", false);
-        // p.traceInstructions();
-        p.executeInstructions();
-      }
-
-      // ------------------------------------------------------
-      // ETAPE 2 : CACHE EN BASE DES PROCESS DE DESINSTALLATION
-      // ------------------------------------------------------
-
-      displayMessageln(System.getProperty("line.separator") + "Uninstall stored parts are :");
-      String[] tagsToProcessU = TAGS_TO_MERGE_4_UNINSTALL;
-      for (int ip = 0; ip < processesToCacheIntoDB.size(); ip++) {
-
-        Object[] o = (Object[]) processesToCacheIntoDB.get(ip);
-        String pName = (String) o[0];
-        DBXmlDocument xFile = (DBXmlDocument) o[1];
-
-        // Get the root element
-        Element rootU = xFile.getDocument().getRootElement();
-        int nbFilesU = 0;
-
-        // piece de DB Builder
-        DBBuilderPiece pU;
-
-        for (int i = 0; i < tagsToProcessU.length; i++) {
-
-          // liste des pièces correspondant au i-eme tag a traiter
-          List listeTagsCU = rootU.getChildren(DBBuilderFileItem.CURRENT_TAG);
-          Iterator iterTagsCU = listeTagsCU.iterator();
-          while (iterTagsCU.hasNext()) {
-            Element eltTagCU = (Element) iterTagsCU.next();
-            List listeTagsU = eltTagCU.getChildren(tagsToProcessU[i]);
-            Iterator iterTagsU = listeTagsU.iterator();
-            while (iterTagsU.hasNext()) {
-              Element eltTagU = (Element) iterTagsU.next();
-              List listeFilesU = eltTagU.getChildren(DBBuilderFileItem.FILE_TAG);
-              Iterator iterFilesU = listeFilesU.iterator();
-              int iFile = 1;
-              while (iterFilesU.hasNext()) {
-                Element eltFileU = (Element) iterFilesU.next();
-                String nameU = eltFileU.getAttributeValue(DBBuilderFileItem.FILENAME_ATTRIB);
-
-                if (File.separator.equals("/")) {
-                  nameU = StringUtil.sReplace("\\", "/", nameU);
-                } else {
-                  nameU = StringUtil.sReplace("/", "\\", nameU);
-                }
-                String valueU = eltFileU.getAttributeValue(DBBuilderFileItem.FILETYPE_ATTRIB);
-                String delimiterU = eltFileU.getAttributeValue(DBBuilderFileItem.FILEDELIMITER_ATTRIB);
-                String skeepdelimiterU = eltFileU.getAttributeValue(DBBuilderFileItem.FILEKEEPDELIMITER_ATTRIB);
-                String dbprocnameU = eltFileU.getAttributeValue(DBBuilderFileItem.FILEDBPROCNAME_ATTRIB);
-                boolean keepdelimiterU = (skeepdelimiterU != null && skeepdelimiterU.equals("YES"));
-                displayMessageln("\t" + tagsToProcessU[i] + " : name : " + nameU + "\t type : " + valueU);
-                if (valueU.equals(DBBuilderFileItem.FILEATTRIBSTATEMENT_VALUE)) {
-                  // piece de type Single Statement
-                  pU = new DBBuilderSingleStatementPiece(DIR_DBPIECESFILESROOT + File.separator + nameU, tagsToProcessU[i], verbose.booleanValue());
-                  pU.cacheIntoDB(pName, iFile);
-                } else if (valueU.equals(DBBuilderFileItem.FILEATTRIBSEQUENCE_VALUE)) {
-                  // piece de type Single Statement
-                  pU = new DBBuilderMultipleStatementPiece(DIR_DBPIECESFILESROOT + File.separator + nameU, tagsToProcessU[i], verbose.booleanValue(), delimiterU, keepdelimiterU);
-                  pU.cacheIntoDB(pName, iFile);
-                } else if (valueU.equals(DBBuilderFileItem.FILEATTRIBDBPROC_VALUE)) {
-                  // piece de type Database Procedure
-                  pU = new DBBuilderDBProcPiece(DIR_DBPIECESFILESROOT + File.separator + nameU, tagsToProcessU[i], verbose.booleanValue(), dbprocnameU);
-                  pU.cacheIntoDB(pName, iFile);
-                }
-                iFile++;
-                nbFilesU++;
-              }
-            }
-          }
-          if (nbFilesU == 0) {
-            displayMessageln("\t" + tagsToProcessU[i] + " : (none)");
-          }
-        }
-      }
-
-    } catch (Exception e) {
-      // rollback
-      DBConnexion.getInstance().abort();
-      throw e;
     }
-
-    displayMessageln(System.getProperty("line.separator") + "DB Status after build :");
+    displayMessageln("DB Status after build :");
     checkDBStatus();
-
-    // commit ou rollback en fonction du paramètre
-    if (simulate.booleanValue()) {
-      DBConnexion.getInstance().abort();
-      displayMessageln(System.getProperty("line.separator") + "Build rollbacked because of simulate mode.");
-    } else {
-      DBConnexion.getInstance().commit();
-      displayMessageln(System.getProperty("line.separator") + "Build commited.");
-    }
   }
 
   // liste des packages en base
-  private static Vector checkDBStatus() {
-
-    Vector packagesIntoDB = new Vector();
-
-    String selectAllPackagesFromDB = "select SR_PACKAGE as package, SR_VERSION as version from SR_PACKAGES order by SR_PACKAGE";
-    List packageList = null;
+  private static List<String> checkDBStatus() {
+    List<String> packagesIntoDB = new ArrayList<String>();
+    Connection connection = null;
     try {
-      packageList = con.executeLoopQuery(selectAllPackagesFromDB);
-    } catch (Exception e) {
-      // displayMessageln( "\tIgnore this unfatal error due to empty database." );
-    }
-    if (packageList == null) {
-      displayMessageln("\tNo package installed into DB.");
-    } else {
-      int nbValues = packageList.size();
-      if (nbValues < 1) {
-        displayMessageln("\tNo package installed into DB.");
-      } else {
-        for (int i = 0; i < nbValues; i++) {
-          HashMap h = (HashMap) packageList.get(i);
-          String srPackage = "(null)";
-          if (h.containsKey("package")) //MSSSQL et POSTGRES
-          {
-            srPackage = (String) h.get("package");
-            packagesIntoDB.add(srPackage);
-          } else if (h.containsKey("PACKAGE")) //ORACLE
-          {
-            srPackage = (String) h.get("PACKAGE");
-            packagesIntoDB.add(srPackage);
-          }
-          String srVersion = "(null)";
-          if (h.containsKey("version")) //MSSSQL et POSTGRES
-          {
-            srVersion = (String) h.get("version");
-          } else if (h.containsKey("VERSION")) //ORACLE
-          {
-            srVersion = (String) h.get("VERSION");
-          }
-
-          displayMessageln("\t" + srPackage + " v. " + srVersion);
+      connection = ConnectionFactory.getConnection();
+      Statement stmt = connection.createStatement();
+      ResultSet rs = stmt.executeQuery(
+          "select SR_PACKAGE, SR_VERSION from SR_PACKAGES order by SR_PACKAGE");
+      while (rs.next()) {
+        String srPackage = rs.getString("SR_PACKAGE");
+        String srVersion = rs.getString("SR_VERSION");
+        displayMessageln("\t" + srPackage + " v. " + srVersion);
+        packagesIntoDB.add(srPackage);
+      }
+      rs.close();
+      stmt.close();
+    } catch (SQLException sqlex) {
+    } finally {
+      if (connection != null) {
+        try {
+          connection.close();
+        } catch (SQLException sqlex) {
         }
       }
     }
@@ -1109,37 +915,215 @@ public class DBBuilder {
 
   // Récupère le répertoire racine d'installation
   public static String getHome() {
-
     if (dbbuilderHome == null) {
-
       if (!System.getProperties().containsKey(HOME_KEY)) {
-
         System.err.println("### CANNOT FIND DBBUILDER INSTALL LOCATION ###");
-        System.err.println("please use \"-D" + HOME_KEY + "=<install location>\" on the command line");
+        System.err.println("please use \"-D" + HOME_KEY
+            + "=<install location>\" on the command line");
         System.exit(1);
       }
-
       dbbuilderHome = System.getProperty(HOME_KEY);
     }
-
     return dbbuilderHome;
   }
 
   // Récupère le répertoire data d'installation
   public static String getData() {
-
     if (dbbuilderData == null) {
       if (System.getProperties().containsKey(DATA_KEY)) {
         dbbuilderData = System.getProperty(DATA_KEY);
       }
     }
-
     return dbbuilderData;
   }
 
   // Récupère le répertoire temp
   public static String getTemp() {
-
     return DIR_TEMP;
+  }
+
+  private static void processSQLFiles(Connection connection, Element moduleRoot,
+      String[] tagsToProcess, MetaInstructions metaInstructions) throws Exception {
+    // piece de DB Builder
+    DBBuilderPiece p = null;
+    for (int i = 0; i < tagsToProcess.length; i++) {
+      int nbFiles = 0;
+      // liste des pièces correspondant au i-eme tag a traiter
+      List<Element> listeTags = (List<Element>) moduleRoot.getChildren(tagsToProcess[i]);
+      for (Element eltTag : listeTags) {
+        String nomTag = eltTag.getName();
+        // -------------------------------------
+        // TRAITEMENT DES PIECES DE TYPE DB
+        // -------------------------------------
+        List<Element> listeRowFiles = (List<Element>) eltTag.getChildren(ROW_TAG);
+        for (Element eltFile : listeRowFiles) {
+          String name = eltFile.getAttributeValue(FILENAME_ATTRIB);
+          String value = eltFile.getAttributeValue(FILETYPE_ATTRIB);
+          Integer order = new Integer(eltFile.getAttributeValue(DBORDER_ATTRIB));
+          String delimiter = eltFile.getAttributeValue(FILEDELIMITER_ATTRIB);
+          String skeepdelimiter = eltFile.getAttributeValue(FILEKEEPDELIMITER_ATTRIB);
+          String dbprocname = eltFile.getAttributeValue(FILEDBPROCNAME_ATTRIB);
+          boolean keepdelimiter = "YES".equals(skeepdelimiter);
+          displayMessageln("\t" + tagsToProcess[i] + " : internal-id : " + name + "\t type : "
+              + value);
+          nbFiles++;
+          if (FILEATTRIBSTATEMENT_VALUE.equals(value)) {
+            // piece de type Single Statement
+            p = new DBBuilderSingleStatementPiece(name, name + "(" + order + ")", nomTag, order.
+                intValue(), verbose);
+          } else if (FILEATTRIBSEQUENCE_VALUE.equals(value)) {
+            // piece de type Single Statement
+            p = new DBBuilderMultipleStatementPiece(name, name + "(" + order + ")", nomTag, order.
+                intValue(), verbose, delimiter, keepdelimiter);
+          } else if (FILEATTRIBDBPROC_VALUE.equals(value)) {
+            // piece de type Database Procedure
+            p = new DBBuilderDBProcPiece(name, name + "(" + order + ")", nomTag,
+                order.intValue(), verbose, dbprocname);
+
+          }
+          if (p != null) {
+            p.executeInstructions(connection);
+          }
+        }
+
+        // -------------------------------------
+        // TRAITEMENT DES PIECES DE TYPE FICHIER
+        // -------------------------------------
+        List listeFiles = eltTag.getChildren(FILE_TAG);
+        Iterator iterFiles = listeFiles.iterator();
+        while (iterFiles.hasNext()) {
+          Element eltFile = (Element) iterFiles.next();
+          String name = eltFile.getAttributeValue(FILENAME_ATTRIB);
+
+          if (File.separatorChar == '/') {
+            name = StringUtil.sReplace("\\", "/", name);
+          } else {
+            name = StringUtil.sReplace("/", "\\", name);
+          }
+
+          String value = eltFile.getAttributeValue(FILETYPE_ATTRIB);
+          String delimiter = eltFile.getAttributeValue(FILEDELIMITER_ATTRIB);
+          String skeepdelimiter =
+              eltFile.getAttributeValue(FILEKEEPDELIMITER_ATTRIB);
+          String dbprocname = eltFile.getAttributeValue(FILEDBPROCNAME_ATTRIB);
+          boolean keepdelimiter = (skeepdelimiter != null && skeepdelimiter.equals("YES"));
+          String classname = eltFile.getAttributeValue(FILECLASSNAME_ATTRIB);
+          String methodname = eltFile.getAttributeValue(FILEMETHODNAME_ATTRIB);
+          displayMessageln("\t" + tagsToProcess[i] + " : name : " + name + "\t type : " + value);
+          nbFiles++;
+          if (FILEATTRIBSTATEMENT_VALUE.equals(value)) {
+            // piece de type Single Statement
+            p = new DBBuilderSingleStatementPiece(DIR_DBPIECESFILESROOT + File.separator + name,
+                nomTag, verbose);
+          } else if (FILEATTRIBSEQUENCE_VALUE.equals(value)) {
+            p = new DBBuilderMultipleStatementPiece(DIR_DBPIECESFILESROOT + File.separator + name,
+                nomTag, verbose, delimiter, keepdelimiter);
+          } else if (FILEATTRIBDBPROC_VALUE.equals(value)) {
+            // piece de type Database Procedure
+            p = new DBBuilderDBProcPiece(DIR_DBPIECESFILESROOT + File.separator + name, nomTag,
+                verbose, dbprocname);
+          } else if (FILEATTRIBJAVALIB_VALUE.equals(value)) {
+            // piece de type Java invoke
+            p = new DBBuilderDynamicLibPiece(DIR_DBPIECESFILESROOT + File.separator + name,
+                nomTag, verbose, classname, methodname);
+          }
+          if (p != null) {
+            p.executeInstructions(connection);
+          }
+        }
+      }
+      if (nbFiles == 0) {
+        displayMessageln("\t" + tagsToProcess[i] + " : (none)");
+      }
+    }
+    List<String> sqlMetaInstructions = metaInstructions.getInstructions(moduleRoot.getAttributeValue(
+        DBXmlDocument.ATT_MODULE_ID));
+    // Mise à jour des versions en base
+    if (sqlMetaInstructions.size() == 0) {
+      displayMessageln("\tdbbuilder meta base maintenance : (none)");
+    } else {
+      displayMessageln("\tdbbuilder meta base maintenance :");
+      String instructions = new String();
+      for (String instruction : sqlMetaInstructions) {
+        instructions = instructions.concat(instruction + "\nGO");
+      }
+      p = new DBBuilderMultipleStatementPiece("DBBuilder meta base", "DBBuilder meta base",
+          instructions, verbose, "\nGO", false);
+      p.executeInstructions(connection);
+    }
+  }
+
+  protected static void cacheIntoDb(Connection connection, List<FileInformation> informations)
+      throws Exception {
+    // ------------------------------------------------------
+    // ETAPE 2 : CACHE EN BASE DES PROCESS DE DESINSTALLATION
+    // ------------------------------------------------------
+    displayMessageln(System.getProperty("line.separator") + "Uninstall stored parts are :");
+    String[] tagsToProcessU = TAGS_TO_MERGE_4_UNINSTALL;
+    for (FileInformation information : informations) {
+      String pName = information.getSrPackage();
+      DBXmlDocument xFile = information.getDocument();
+      // Get the root element
+      Element rootU = xFile.getDocument().getRootElement();
+      int nbFilesU = 0;
+      // piece de DB Builder
+      DBBuilderPiece pU;
+      for (int i = 0; i < tagsToProcessU.length; i++) {
+        // liste des pièces correspondant au i-eme tag a traiter
+        List<Element> listeTagsCU = rootU.getChildren(DBBuilderFileItem.CURRENT_TAG);
+        for (Element eltTagCU : listeTagsCU) {
+          List listeTagsU = eltTagCU.getChildren(tagsToProcessU[i]);
+          Iterator iterTagsU = listeTagsU.iterator();
+          while (iterTagsU.hasNext()) {
+            Element eltTagU = (Element) iterTagsU.next();
+            List listeFilesU = eltTagU.getChildren(DBBuilderFileItem.FILE_TAG);
+            Iterator iterFilesU = listeFilesU.iterator();
+            int iFile = 1;
+            while (iterFilesU.hasNext()) {
+              Element eltFileU = (Element) iterFilesU.next();
+              String nameU = eltFileU.getAttributeValue(DBBuilderFileItem.FILENAME_ATTRIB);
+
+              if (File.separator.equals("/")) {
+                nameU = StringUtil.sReplace("\\", "/", nameU);
+              } else {
+                nameU = StringUtil.sReplace("/", "\\", nameU);
+              }
+              String valueU = eltFileU.getAttributeValue(DBBuilderFileItem.FILETYPE_ATTRIB);
+              String delimiterU =
+                  eltFileU.getAttributeValue(DBBuilderFileItem.FILEDELIMITER_ATTRIB);
+              String skeepdelimiterU =
+                  eltFileU.getAttributeValue(DBBuilderFileItem.FILEKEEPDELIMITER_ATTRIB);
+              String dbprocnameU =
+                  eltFileU.getAttributeValue(DBBuilderFileItem.FILEDBPROCNAME_ATTRIB);
+              boolean keepdelimiterU = (skeepdelimiterU != null && skeepdelimiterU.equals("YES"));
+              displayMessageln("\t" + tagsToProcessU[i] + " : name : " + nameU + "\t type : "
+                  + valueU);
+              if (valueU.equals(FILEATTRIBSTATEMENT_VALUE)) {
+                // piece de type Single Statement
+                pU = new DBBuilderSingleStatementPiece(DIR_DBPIECESFILESROOT + File.separator
+                    + nameU, tagsToProcessU[i], verbose);
+                pU.cacheIntoDB(connection, pName, iFile);
+              } else if (valueU.equals(FILEATTRIBSEQUENCE_VALUE)) {
+                // piece de type Single Statement
+                pU = new DBBuilderMultipleStatementPiece(DIR_DBPIECESFILESROOT + File.separator
+                    + nameU, tagsToProcessU[i], verbose, delimiterU,
+                    keepdelimiterU);
+                pU.cacheIntoDB(connection, pName, iFile);
+              } else if (valueU.equals(FILEATTRIBDBPROC_VALUE)) {
+                // piece de type Database Procedure
+                pU = new DBBuilderDBProcPiece(DIR_DBPIECESFILESROOT + File.separator + nameU,
+                    tagsToProcessU[i], verbose, dbprocnameU);
+                pU.cacheIntoDB(connection, pName, iFile);
+              }
+              iFile++;
+              nbFilesU++;
+            }
+          }
+        }
+        if (nbFilesU == 0) {
+          displayMessageln("\t" + tagsToProcessU[i] + " : (none)");
+        }
+      }
+    }
   }
 }

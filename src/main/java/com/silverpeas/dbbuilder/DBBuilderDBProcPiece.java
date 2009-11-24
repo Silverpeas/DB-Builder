@@ -23,14 +23,14 @@
  */
 package com.silverpeas.dbbuilder;
 
+import java.sql.Connection;
+
 /**
- * Titre : dbBuilder Description : Builder des BDs Silverpeas Copyright :
- * Copyright (c) 2001 Société : Stratélia Silverpeas
- * 
+ * Titre : dbBuilder Description : Builder des BDs Silverpeas Copyright : Copyright (c) 2001
+ * Société : Stratélia Silverpeas
  * @author ATH
  * @version 1.0
  */
-
 public class DBBuilderDBProcPiece extends DBBuilderPiece {
 
   private String dbProcName = null;
@@ -71,15 +71,15 @@ public class DBBuilderDBProcPiece extends DBBuilderPiece {
   public DBBuilderDBProcPiece(String actionInternalID, String pieceName,
       String actionName, int itemOrder, boolean traceMode, String dbProcName)
       throws Exception {
-
     super(actionInternalID, pieceName, actionName, itemOrder, traceMode);
     moreInitialize(dbProcName);
   }
 
   private void moreInitialize(String dbProcName) throws Exception {
 
-    if (dbProcName == null)
+    if (dbProcName == null) {
       throw new Exception("Missing <dbprocname> tag for \"fileName\" item.");
+    }
 
     this.dbProcName = dbProcName;
 
@@ -96,10 +96,8 @@ public class DBBuilderDBProcPiece extends DBBuilderPiece {
         + this.dbProcName, null);
   }
 
-  public void cacheIntoDB(String _package, int _itemOrder) throws Exception {
-
-    cacheIntoDB(_package, _itemOrder, DBBuilderFileItem.FILEATTRIBDBPROC_VALUE,
+  public void cacheIntoDB(Connection connection, String _package, int _itemOrder) throws Exception {
+    cacheIntoDB(connection, _package, _itemOrder, DBBuilderFileItem.FILEATTRIBDBPROC_VALUE,
         null, null, dbProcName);
   }
-
 }

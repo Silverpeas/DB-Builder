@@ -47,20 +47,22 @@ import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 
 /**
- * Represents an XML Document and provides convenient methods. The methods are
- * used basically to load a document (parse it and obtain a tree
- * representation), save a document (save the tree representation to a well
- * formed XML file). More sophisticated methods are used to merge the document
- * with another one and to sort the tags in the document (it is needed when used
- * in application server).
- * 
+ * Represents an XML Document and provides convenient methods. The methods are used basically to
+ * load a document (parse it and obtain a tree representation), save a document (save the tree
+ * representation to a well formed XML file). More sophisticated methods are used to merge the
+ * document with another one and to sort the tags in the document (it is needed when used in
+ * application server).
  * @author Silverpeas
  * @version 1.0
  * @since 1.0
  */
 public class DBXmlDocument extends ApplicationBuilderItem {
 
+  public static final String ELT_MODULE = "module";
+  public static final String ATT_MODULE_ID = "id";
+
   private XMLOutputter outputter = null;
+  
   /**
    * @since 1.0
    */
@@ -85,7 +87,6 @@ public class DBXmlDocument extends ApplicationBuilderItem {
 
   /**
    * Save the document tree in the file item
-   * 
    * @since 1.0
    * @roseuid 3AAF323B0003
    */
@@ -99,9 +100,7 @@ public class DBXmlDocument extends ApplicationBuilderItem {
   }
 
   /**
-   * Save the document tree to a stream. This is convenient for writing in an
-   * archive
-   * 
+   * Save the document tree to a stream. This is convenient for writing in an archive
    * @roseuid 3AAF41A601C1
    */
   public void saveTo(java.io.OutputStream outStream) throws AppBuilderException {
@@ -115,7 +114,6 @@ public class DBXmlDocument extends ApplicationBuilderItem {
 
   /**
    * Loads the document tree from the file system
-   * 
    * @roseuid 3AAF337D004C
    */
   public void load() throws AppBuilderException {
@@ -137,11 +135,9 @@ public class DBXmlDocument extends ApplicationBuilderItem {
   }
 
   /**
-   * Loads the document tree from the contents of an XML file provided as a
-   * stream. This can happen when loading from an archive.
-   * 
-   * @param xmlStream
-   *          the contents of an XML file
+   * Loads the document tree from the contents of an XML file provided as a stream. This can happen
+   * when loading from an archive.
+   * @param xmlStream the contents of an XML file
    * @since 1.0
    * @roseuid 3AAF4099035F
    */
@@ -161,19 +157,18 @@ public class DBXmlDocument extends ApplicationBuilderItem {
   }
 
   /**
-   * Merges only the children of the root element of each document. It takes all
-   * the elements concerned by the array of tags from all the documents to merge
-   * and adds them to the resulting document. <strong>In the resulting document,
-   * the comments, processing instructions and entities are removed.</strong>
-   * 
+   * Merges only the children of the root element of each document. It takes all the elements
+   * concerned by the array of tags from all the documents to merge and adds them to the resulting
+   * document. <strong>In the resulting document, the comments, processing instructions and entities
+   * are removed.</strong>
    * @roseuid 3AAF3793006E
    */
   public void mergeWith(String[] tagsToMerge, DBXmlDocument XmlFile)
       throws AppBuilderException {
     /**
-     * gets the resulting document from the master document.
-     * Cloning the document is important. If you clone or copy an element, the copy
-     * keeps his owner and, as a result, the element appears twice in the document
+     * gets the resulting document from the master document. Cloning the document is important. If
+     * you clone or copy an element, the copy keeps his owner and, as a result, the element appears
+     * twice in the document
      */
     Element root = getDocument().getRootElement();
     root.detach();
@@ -197,17 +192,15 @@ public class DBXmlDocument extends ApplicationBuilderItem {
   } // mergeWith
 
   /**
-   * Sorts the children elements of the document root according to the array
-   * order. The tags not found in the array remain in the same order but at the
-   * beginning of the document
-   * 
+   * Sorts the children elements of the document root according to the array order. The tags not
+   * found in the array remain in the same order but at the beginning of the document
    * @roseuid 3AAF3986038D
    */
   public void sort(java.lang.String[] tagsToSort) throws AppBuilderException {
     /**
-     * gets the resulting document from the master document. Cloning the
-     * document is important. If you clone or copy an element, the copy keeps
-     * his owner and, as a result, the element appears twice in the document
+     * gets the resulting document from the master document. Cloning the document is important. If
+     * you clone or copy an element, the copy keeps his owner and, as a result, the element appears
+     * twice in the document
      */
     org.jdom.Document resultDoc = (org.jdom.Document) getDocument().clone();
     Element root = resultDoc.getRootElement();
@@ -245,9 +238,7 @@ public class DBXmlDocument extends ApplicationBuilderItem {
 
   /**
    * Changes the default encoding
-   * 
-   * @param encoding
-   *          the standard name of the encoding
+   * @param encoding the standard name of the encoding
    * @since 1.0
    * @roseuid 3AAF4C6E027E
    */
@@ -279,9 +270,7 @@ public class DBXmlDocument extends ApplicationBuilderItem {
 
   /**
    * Gets the size of the resulting xml document
-   * 
-   * @return the size of the document in memory, given the encoding,
-   *         <code>-1</code> if unknown.
+   * @return the size of the document in memory, given the encoding, <code>-1</code> if unknown.
    */
   public long getDocumentSize() throws AppBuilderException {
     if (getDocument() != null) {
@@ -299,15 +288,15 @@ public class DBXmlDocument extends ApplicationBuilderItem {
   }
 
   /**
-   * Pour chaque Ã©lÃ©ment Ã  rechercher (tagsToFind) renvoie la valeur de
-   * l'attribut (attribute) ou de l'Ã©lÃ©ment si l'attribut est null
+   * For each element in the tagsToFind arry, looks for the attribute and return its value - the
+   * name of the element if the attribute is not found
    */
   public String[] getAttributeValues(String[] tagsToFind, String attribute)
       throws AppBuilderException {
     /**
-     * gets the resulting document from the master document. Cloning the
-     * document is important. If you clone or copy an element, the copy keeps
-     * his owner and, as a result, the element appears twice in the document
+     * gets the resulting document from the master document. Cloning the document is important. If
+     * you clone or copy an element, the copy keeps his owner and, as a result, the element appears
+     * twice in the document
      */
     org.jdom.Document resultDoc = (org.jdom.Document) getDocument().clone();
     Element root = resultDoc.getRootElement();
@@ -348,10 +337,8 @@ public class DBXmlDocument extends ApplicationBuilderItem {
   }
 
   /**
-   * Looks for all the elements with the given tag in the root element and its
-   * children. returns <code>null</code> if nothing was found The values are
-   * unique in the array returned
-   * 
+   * Looks for all the elements with the given tag in the root element and its children. returns
+   * <code>null</code> if nothing was found The values are unique in the array returned
    * @return the array of all the values found
    */
   public String[] getTagValues(String tagToFind) {
@@ -371,10 +358,8 @@ public class DBXmlDocument extends ApplicationBuilderItem {
   }
 
   /**
-   * Looks for all the attributes with the given name in the root element and
-   * its children. returns <code>null</code> if nothing was found. The values
-   * are unique in the array returned
-   * 
+   * Looks for all the attributes with the given name in the root element and its children. returns
+   * <code>null</code> if nothing was found. The values are unique in the array returned
    * @return the array of all the values found
    */
   public String[] getAttributeValues(String attributeToFind) {
@@ -422,14 +407,14 @@ public class DBXmlDocument extends ApplicationBuilderItem {
   }
 
   /**
-   * Merges only the children of the root element of each document. It takes all
-   * the elements concerned by the array of tags from all the documents to merge
-   * and adds them to the resulting document. <strong>In the resulting document,
-   * the comments, processing instructions and entities are removed.</strong>
-   * 
+   * Merges only the children of the root element of each document. It takes all the elements
+   * concerned by the array of tags from all the documents to merge and adds them to the resulting
+   * document. <strong>In the resulting document, the comments, processing instructions and entities
+   * are removed.</strong>
    * @roseuid 3AAF3793006E
    */
-  public void mergeWith(DBBuilderItem dbbuilderItem, String[] tagsToMerge, VersionTag[] blocks_to_merge) throws Exception {
+  public void mergeWith(DBBuilderItem dbbuilderItem, String[] tagsToMerge,
+      VersionTag[] blocks_to_merge) throws Exception {
     /** merges the elements in the resulting document */
     Element root = getDocument().getRootElement();
     root.detach();
@@ -446,18 +431,23 @@ public class DBXmlDocument extends ApplicationBuilderItem {
         }
       }
     } else {
+      Element moduleElement = new Element(ELT_MODULE);
+      moduleElement.setAttribute(ATT_MODULE_ID, dbbuilderItem.getModule());
       /** gets all the elements which will be included in the resulting document */
       for (int iBlock = 0; iBlock < blocks_to_merge.length; iBlock++) {
-        Element myElement = dbbuilderItem.getUniqueBlock(blocks_to_merge[iBlock].getCurrent_or_previous(), blocks_to_merge[iBlock].getVersion());
+        Element myElement =
+            dbbuilderItem.getUniqueBlock(blocks_to_merge[iBlock].getCurrent_or_previous(),
+            blocks_to_merge[iBlock].getVersion());
         for (int iTag = 0; iTag < tagsToMerge.length; iTag++) {
           for (Object child : myElement.getChildren(tagsToMerge[iTag])) {
             if (child instanceof Content) {
               Content newElement = (Content) ((Content) child).clone();
               newElement.detach();
-              root.addContent(newElement);
+              moduleElement.addContent(newElement);
             }
           }
         }
+        root.addContent(moduleElement);
       }
     }
     /** the result */

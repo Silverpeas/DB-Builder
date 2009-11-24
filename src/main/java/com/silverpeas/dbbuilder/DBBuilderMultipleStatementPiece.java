@@ -25,11 +25,11 @@ package com.silverpeas.dbbuilder;
 
 import java.util.Vector;
 import com.silverpeas.FileUtil.StringUtil;
+import java.sql.Connection;
 
 /**
- * Titre : dbBuilder Description : Builder des BDs Silverpeas Copyright :
- * Copyright (c) 2001 Société : Stratélia Silverpeas
- * 
+ * Titre : dbBuilder Description : Builder des BDs Silverpeas Copyright : Copyright (c) 2001
+ * Société : Stratélia Silverpeas
  * @author ATH
  * @version 1.0
  */
@@ -60,7 +60,6 @@ public class DBBuilderMultipleStatementPiece extends DBBuilderPiece {
   public DBBuilderMultipleStatementPiece(String pieceName, String actionName,
       boolean traceMode, String delimiter, boolean keepDelimiter)
       throws Exception {
-
     super(pieceName, actionName, traceMode);
     moreInitialize(delimiter, keepDelimiter);
   }
@@ -69,7 +68,6 @@ public class DBBuilderMultipleStatementPiece extends DBBuilderPiece {
   public DBBuilderMultipleStatementPiece(String pieceName, String actionName,
       String content, boolean traceMode, String delimiter, boolean keepDelimiter)
       throws Exception {
-
     super(pieceName, actionName, content, traceMode);
     moreInitialize(delimiter, keepDelimiter);
   }
@@ -78,7 +76,6 @@ public class DBBuilderMultipleStatementPiece extends DBBuilderPiece {
   public DBBuilderMultipleStatementPiece(String actionInternalID,
       String pieceName, String actionName, int itemOrder, boolean traceMode,
       String delimiter, boolean keepDelimiter) throws Exception {
-
     super(actionInternalID, pieceName, actionName, itemOrder, traceMode);
     moreInitialize(delimiter, keepDelimiter);
   }
@@ -116,7 +113,7 @@ public class DBBuilderMultipleStatementPiece extends DBBuilderPiece {
     }
   }
 
-  public void cacheIntoDB(String _package, int _itemOrder) throws Exception {
+  public void cacheIntoDB(Connection connection, String _package, int _itemOrder) throws Exception {
 
     Integer kd;
     if (keepDelimiter)
@@ -124,7 +121,7 @@ public class DBBuilderMultipleStatementPiece extends DBBuilderPiece {
     else
       kd = new Integer(0);
 
-    cacheIntoDB(_package, _itemOrder,
+    cacheIntoDB(connection, _package, _itemOrder,
         DBBuilderFileItem.FILEATTRIBSEQUENCE_VALUE, delimiter, kd, null);
   }
 

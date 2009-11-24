@@ -23,8 +23,8 @@
  */
 package com.silverpeas.dbbuilder;
 
-import com.stratelia.dbConnector.DBConnexion;
 import com.silverpeas.dbbuilder.dbbuilder_dl.DbBuilderDynamicPart;
+import java.sql.Connection;
 
 public class DBBuilderDynamicLibPiece extends DBBuilderPiece {
 
@@ -60,18 +60,14 @@ public class DBBuilderDynamicLibPiece extends DBBuilderPiece {
 
   private void moreInitialize(String className, String methodName)
       throws Exception {
-
     if (className == null) {
       throw new Exception("Missing <classname> tag for \"pieceName\" item.");
     }
-
     if (methodName == null) {
       throw new Exception("Missing <methodname> tag for \"pieceName\" item.");
     }
-
     this.className = className;
     this.methodName = methodName;
-
     try {
       dynamicPart = (DbBuilderDynamicPart) Class.forName(className)
           .newInstance();
@@ -79,22 +75,19 @@ public class DBBuilderDynamicLibPiece extends DBBuilderPiece {
     } catch (Exception e) {
       throw new Exception("Unable to load \"" + className + "\" class.");
     } // try
-
     dynamicPart.setSILVERPEAS_HOME(DBBuilder.getHome());
     dynamicPart.setSILVERPEAS_DATA(DBBuilder.getData());
-    dynamicPart.setConnection(DBConnexion.getInstance().getConnection());
-
     setInstructions();
   }
 
-  public void setInstructions() {
 
+  public void setInstructions() {
     instructions = new Instruction[1];
     instructions[0] = new Instruction(Instruction.IN_INVOKEJAVA, methodName,
         dynamicPart);
   }
 
-  public void cacheIntoDB(String _package, int _itemOrder) throws Exception {
+  public void cacheIntoDB(Connection connection, String _package, int _itemOrder) throws Exception {
     // rien à cacher pour une proc dynamique
   }
 }
