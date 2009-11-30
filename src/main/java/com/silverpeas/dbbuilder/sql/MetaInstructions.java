@@ -37,36 +37,36 @@ import java.util.Map;
  */
 public class MetaInstructions {
 
-  private Map<String, List<String>> instructions;
+  private Map<String, List<SQLInstruction>> instructions;
 
   public MetaInstructions() {
-    instructions = new HashMap<String, List<String>>();
+    instructions = new HashMap<String, List<SQLInstruction>>();
   }
 
-  public void addInstruction(String module, String instruction) {
+  public void addInstruction(String module, SQLInstruction instruction) {
     if (instructions.containsKey(module)) {
       instructions.get(module).add(instruction);
     } else {
-      List<String> newInstructions = new ArrayList<String>();
+      List<SQLInstruction> newInstructions = new ArrayList<SQLInstruction>();
       newInstructions.add(instruction);
       instructions.put(module, newInstructions);
     }
   }
 
-  public void addInstructions(String module, List<String> instructionList) {
+  public void addInstructions(String module, List<SQLInstruction> instructionList) {
     if (instructions.containsKey(module)) {
       instructions.get(module).addAll(instructionList);
     } else {
-      List<String> newInstructions = new ArrayList<String>();
+      List<SQLInstruction> newInstructions = new ArrayList<SQLInstruction>();
       newInstructions.addAll(instructionList);
       instructions.put(module, newInstructions);
     }
   }
 
-  public List<String> getInstructions(String module) {
+  public List<SQLInstruction> getInstructions(String module) {
     if (instructions.containsKey(module)) {
       return instructions.get(module);
     }
-    return new ArrayList<String>();
+    return new ArrayList<SQLInstruction>();
   }
 }

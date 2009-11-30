@@ -53,8 +53,12 @@ import org.jdom.Element;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import com.silverpeas.dbbuilder.sql.ConnectionFactory;
 import com.silverpeas.dbbuilder.sql.FileInformation;
+import com.silverpeas.dbbuilder.sql.InstallSQLInstruction;
 import com.silverpeas.dbbuilder.sql.MetaInstructions;
 import com.silverpeas.dbbuilder.sql.UninstallInformations;
+import com.silverpeas.dbbuilder.sql.RemoveSQLInstruction;
+import com.silverpeas.dbbuilder.sql.SQLInstruction;
+import com.silverpeas.dbbuilder.sql.UninstallSQLInstruction;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -72,8 +76,6 @@ import static com.silverpeas.dbbuilder.DBBuilderFileItem.*;
  * @version 1.0
  */
 public class DBBuilder {
-
-
 
   static final String NEW_LINE = System.getProperty("line.separator");
   static Date TODAY = new java.util.Date();
@@ -196,7 +198,7 @@ public class DBBuilder {
       // Lecture des paramètres d'entrée
       testParams(args);
 
-      if (simulate && (dbType.equals("oracle") || dbType.equals("ORACLE"))) {
+      if (simulate && "oracle".equalsIgnoreCase(dbType)) {
         throw new Exception("Simulate mode is not allowed for Oracle target databases.");
       }
 
@@ -419,15 +421,7 @@ public class DBBuilder {
         new String(
         "DBBuilder usage: DBBuilder <action> -T <Targeted DB Server type> -D <JDBC Driver> -d <Datasource> -l <user login> -p <user Password> [-v(erbose)] [-s(imulate)]\n"
         + "where <action> == -C(onnection only) | -I(nstall only) | -U(ninstall only) | -O(ptimize only) | -A(ll) | -S(tatus) | -FU(Force Uninstall) <module> \n "
-        + // "where <action> == -C(onnection only) | -I(nstall only) | -U(ninstall only) | -O(ptimize only) | -A(ll) | -S(tatus) | -FU(Force Uninstall) <module> | -CI(Contraints Install) | -CU(Constraints Unistall)\n"
-        // +
-        "      <Targeted DB Server type> == MSSQL | ORACLE | POSTGRES\n");
-
-    // Quelque chose à faire ?
-    // if (args.length != 13) {
-    // printError(usage);
-    // }
-
+        + "      <Targeted DB Server type> == MSSQL | ORACLE | POSTGRES\n");
     boolean getDBType = false;
     boolean getDriver = false;
     boolean getDataSource = false;
@@ -763,9 +757,8 @@ public class DBBuilder {
             processesToCacheIntoDB.addInformation(dbbuilderItem.getModule(), package_name,
                 dbbuilderItem.getFileXml());
             // inscription du module en base
-            sqlMetaInstructions.addInstruction(dbbuilderItem.getModule(),
-                "insert into SR_PACKAGES(SR_PACKAGE, SR_VERSION) values ('"
-                + package_name + "', '" + versionFile + "')");
+            sqlMetaInstructions.addInstruction(dbbuilderItem.getModule(), new InstallSQLInstruction(
+                versionFile, package_name));
           } else {
             displayMessageln("\t" + package_name + " will be upgraded from " + versionDB + " to "
                 + versionFile + ".");
@@ -782,19 +775,8 @@ public class DBBuilder {
                 dbbuilderItem.getFileXml());
 
             // desinscription du module en base
-            sqlMetaInstructions.addInstruction(dbbuilderItem.getModule(),
-                "update SR_PACKAGES set SR_VERSION='" + versionFile
-                + "' where SR_PACKAGE='" + package_name + "'");
-            sqlMetaInstructions.addInstruction(dbbuilderItem.getModule(),
-                "delete from SR_DEPENDENCIES where SR_PACKAGE = '"
-                + package_name + "'");
-            sqlMetaInstructions.addInstruction(
-                dbbuilderItem.getModule(),
-                "delete from SR_SCRIPTS where SR_ITEM_ID IN (SELECT SRU.SR_ITEM_ID from SR_UNINSTITEMS SRU where SRU.SR_PACKAGE = '"
-                + package_name + "')");
-            sqlMetaInstructions.addInstruction(dbbuilderItem.getModule(),
-                "delete from SR_UNINSTITEMS where SR_PACKAGE = '"
-                + package_name + "'");
+            sqlMetaInstructions.addInstruction(dbbuilderItem.getModule(), new UninstallSQLInstruction(
+                versionFile, package_name));
           }
         } else if (getAction().equals(ACTION_OPTIMIZE)) {
           displayMessageln("\t" + package_name + " will be optimized.");
@@ -822,18 +804,8 @@ public class DBBuilder {
         // desinscription du module de la base
         if (!package_name.equalsIgnoreCase("dbbuilder")) {
           System.out.println("delete from SR_");
-          sqlMetaInstructions.addInstruction(pdbbuilderItem.getModule(),
-              "delete from SR_DEPENDENCIES where SR_PACKAGE = '"
-              + package_name + "'");
-          sqlMetaInstructions.addInstruction(
-              pdbbuilderItem.getModule(),
-              "delete from SR_SCRIPTS where SR_ITEM_ID IN (SELECT SRU.SR_ITEM_ID from SR_UNINSTITEMS SRU where SRU.SR_PACKAGE = '"
-              + package_name + "')");
-          sqlMetaInstructions.addInstruction(pdbbuilderItem.getModule(),
-              "delete from SR_UNINSTITEMS where SR_PACKAGE = '" + package_name
-              + "'");
-          sqlMetaInstructions.addInstruction(pdbbuilderItem.getModule(),
-              "delete from SR_PACKAGES where SR_PACKAGE='" + package_name + "'");
+          sqlMetaInstructions.addInstruction(pdbbuilderItem.getModule(), new RemoveSQLInstruction(
+              package_name));
         }
         // construction du xml global des actions d'upgrade de la base
         if (tags_to_merge != null) {
@@ -1009,14 +981,7 @@ public class DBBuilder {
         Iterator iterFiles = listeFiles.iterator();
         while (iterFiles.hasNext()) {
           Element eltFile = (Element) iterFiles.next();
-          String name = eltFile.getAttributeValue(FILENAME_ATTRIB);
-
-          if (File.separatorChar == '/') {
-            name = StringUtil.sReplace("\\", "/", name);
-          } else {
-            name = StringUtil.sReplace("/", "\\", name);
-          }
-
+          String name = getCleanPath(eltFile.getAttributeValue(FILENAME_ATTRIB));
           String value = eltFile.getAttributeValue(FILETYPE_ATTRIB);
           String delimiter = eltFile.getAttributeValue(FILEDELIMITER_ATTRIB);
           String skeepdelimiter =
@@ -1052,7 +1017,7 @@ public class DBBuilder {
         displayMessageln("\t" + tagsToProcess[i] + " : (none)");
       }
     }
-    List<String> sqlMetaInstructions =
+    List<SQLInstruction> sqlMetaInstructions =
         metaInstructions.getInstructions(moduleRoot.getAttributeValue(
         DBXmlDocument.ATT_MODULE_ID));
     // Mise à jour des versions en base
@@ -1060,13 +1025,9 @@ public class DBBuilder {
       displayMessageln("\tdbbuilder meta base maintenance : (none)");
     } else {
       displayMessageln("\tdbbuilder meta base maintenance :");
-      String instructions = new String();
-      for (String instruction : sqlMetaInstructions) {
-        instructions = instructions.concat(instruction + "\nGO");
+      for (SQLInstruction instruction : sqlMetaInstructions) {
+        instruction.execute(connection);
       }
-      p = new DBBuilderMultipleStatementPiece("DBBuilder meta base", "DBBuilder meta base",
-          instructions, verbose, "\nGO", false);
-      p.executeInstructions(connection);
     }
   }
 
@@ -1098,13 +1059,7 @@ public class DBBuilder {
             int iFile = 1;
             while (iterFilesU.hasNext()) {
               Element eltFileU = (Element) iterFilesU.next();
-              String nameU = eltFileU.getAttributeValue(DBBuilderFileItem.FILENAME_ATTRIB);
-
-              if (File.separator.equals("/")) {
-                nameU = StringUtil.sReplace("\\", "/", nameU);
-              } else {
-                nameU = StringUtil.sReplace("/", "\\", nameU);
-              }
+              String nameU = getCleanPath(eltFileU.getAttributeValue(DBBuilderFileItem.FILENAME_ATTRIB));
               String valueU = eltFileU.getAttributeValue(DBBuilderFileItem.FILETYPE_ATTRIB);
               String delimiterU =
                   eltFileU.getAttributeValue(DBBuilderFileItem.FILEDELIMITER_ATTRIB);
@@ -1142,5 +1097,12 @@ public class DBBuilder {
         }
       }
     }
+  }
+
+  private static String getCleanPath(String name) {
+    if (File.separator.equals("/")) {
+      return StringUtil.sReplace("\\", "/", name);
+    }
+    return StringUtil.sReplace("/", "\\", name);
   }
 }
