@@ -166,6 +166,8 @@ public class DBBuilder {
   // mes variables rajoutée
   private static Properties dbBuilderResources = new Properties();
 
+  protected static final String DBBUILDER_MODULE = "dbbuilder";
+
   /**
    * @param args
    * @see
@@ -337,7 +339,7 @@ public class DBBuilder {
           String p = (String) iterPackagesIntoDB.next();
           if (!packagesIntoFile.containsKey(p)) {
             // Package en base et non en contribution -> candidat à desinstallation
-            if ("dbbuilder".equalsIgnoreCase(p)) // le module a desinstaller est dbbuilder, on le
+            if (DBBUILDER_MODULE.equalsIgnoreCase(p)) // le module a desinstaller est dbbuilder, on le
             // garde sous le coude pour le traiter en dernier
             {
               foundDBBuilder = true;
@@ -352,12 +354,12 @@ public class DBBuilder {
         }
 
         if (foundDBBuilder) {
-          if (action.equals(ACTION_ENFORCE_UNINSTALL)) {
-            if (moduleName.equals("dbbuilder")) {
-              itemsList.add(itemsList.size(), "dbbuilder");
+          if (ACTION_ENFORCE_UNINSTALL.equals(action)) {
+            if (DBBUILDER_MODULE.equals(moduleName)) {
+              itemsList.add(itemsList.size(),DBBUILDER_MODULE);
             } else;
           } else {
-            itemsList.add(itemsList.size(), "dbbuilder");
+            itemsList.add(itemsList.size(), DBBUILDER_MODULE);
           }
         }
 
@@ -802,7 +804,7 @@ public class DBBuilder {
         displayMessageln("\t" + package_name + " will be uninstalled.");
         tags_to_merge = TAGS_TO_MERGE_4_UNINSTALL;
         // desinscription du module de la base
-        if (!package_name.equalsIgnoreCase("dbbuilder")) {
+        if (!DBBUILDER_MODULE.equalsIgnoreCase(package_name)) {
           System.out.println("delete from SR_");
           sqlMetaInstructions.addInstruction(pdbbuilderItem.getModule(), new RemoveSQLInstruction(
               package_name));
