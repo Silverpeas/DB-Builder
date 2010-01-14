@@ -131,22 +131,27 @@ public class DBBuilderMultipleStatementPiece extends DBBuilderPiece {
     int previ = 0;
     int curi = 0;
     while (curi < str.length() && curi >= 0) {
-      // System.out.println("previ=" + previ + " curi=" + curi);
       previ = curi;
       curi = str.indexOf(delimiter, curi);
-      // System.out.println(">>curi=" + curi);
       if (curi < str.length() && curi >= 0) {
-        if (keepDelimiter)
-          c.add(str.substring(previ, curi + delimiter.length()));
-        else
-          c.add(str.substring(previ, curi));
+        int endIndex = curi;
+        if (keepDelimiter) {
+          endIndex = curi + delimiter.length();
+        }
+        String instruction = str.substring(previ, endIndex).trim();
+        if (!" ".equals(instruction) && !"".equals(instruction)) {
+          c.add(instruction);
+        }
         curi += delimiter.length();
       } else if (str.length() - previ > delimiter.length()) {
-        if (keepDelimiter)
-          c.add(str.substring(previ, str.length()) + delimiter);
-        else
-          c.add(str.substring(previ, str.length()));
-      } // if
+        String instruction = str.substring(previ, str.length()).trim();
+        if (!" ".equals(instruction) && !"".equals(instruction)) {
+          if (keepDelimiter) {
+            instruction = instruction + delimiter;
+          }
+          c.add(instruction);
+        }
+      }// if
     } // while
     return c;
   }
