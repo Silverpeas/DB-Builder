@@ -60,9 +60,7 @@ public class DBXmlDocument extends ApplicationBuilderItem {
 
   public static final String ELT_MODULE = "module";
   public static final String ATT_MODULE_ID = "id";
-
   private XMLOutputter outputter = null;
-
   /**
    * @since 1.0
    */
@@ -346,8 +344,7 @@ public class DBXmlDocument extends ApplicationBuilderItem {
     if (getDocument().getRootElement().getName().equals(tagToFind)) {
       result.add(getDocument().getRootElement().getText());
     }
-    Iterator iChildren = getDocument().getRootElement().getChildren(tagToFind)
-        .iterator();
+    Iterator iChildren = getDocument().getRootElement().getChildren(tagToFind).iterator();
     while (iChildren.hasNext()) {
       result.add(((Element) iChildren.next()).getText());
     }
@@ -368,8 +365,7 @@ public class DBXmlDocument extends ApplicationBuilderItem {
       result.add(getDocument().getRootElement().getAttributeValue(
           attributeToFind));
     }
-    Iterator iChildren = getDocument().getRootElement().getChildren()
-        .iterator();
+    Iterator iChildren = getDocument().getRootElement().getChildren().iterator();
     Element currentElement = null;
     while (iChildren.hasNext()) {
       currentElement = (Element) iChildren.next();
@@ -447,6 +443,7 @@ public class DBXmlDocument extends ApplicationBuilderItem {
             }
           }
         }
+        moduleElement.detach();
         root.addContent(moduleElement);
       }
     }

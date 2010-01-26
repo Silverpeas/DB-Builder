@@ -69,7 +69,7 @@ public abstract class DBBuilderPiece {
     this.pieceName = pieceName;
     // Charge le contenu sauf pour un package
     if (pieceName.endsWith(".jar")) {
-      content = new String("");
+      content = "";
     } else {
       // charge son contenu sauf pour un jar qui doit être dans le classpath
       File myFile = new File(pieceName);
@@ -123,17 +123,14 @@ public abstract class DBBuilderPiece {
   }
 
   public String getActionInternalID() {
-
     return actionInternalID;
   }
 
   public String getPieceName() {
-
     return pieceName;
   }
 
   public String getActionName() {
-
     return actionName;
   }
 
@@ -141,7 +138,6 @@ public abstract class DBBuilderPiece {
    * retourne le contenu du fichier
    */
   public String getContent() {
-
     // retourne le contenu chargé
     return content;
   }
@@ -149,8 +145,7 @@ public abstract class DBBuilderPiece {
   /*
    * retourne si oui/non mode trace
    */
-  public boolean getTraceMode() {
-
+  public boolean isTraceMode() {
     // retourne le mode de trace
     return traceMode;
   }
@@ -161,7 +156,6 @@ public abstract class DBBuilderPiece {
       throws Exception;
 
   public Instruction[] getInstructions() {
-
     return instructions;
   }
 
@@ -176,10 +170,9 @@ public abstract class DBBuilderPiece {
    */
   public void executeInstructions(Connection connection) throws Exception {
     setConnection(connection);
-    String currentInstruction = null;
     // try {
     for (int i = 0; i < instructions.length; i++) {
-      currentInstruction = instructions[i].getInstructionText();
+      String currentInstruction = instructions[i].getInstructionText();
       if (instructions[i].getInstructionType() == Instruction.IN_UPDATE) {
         executeSingleUpdate(currentInstruction);
       } else if (instructions[i].getInstructionType() == Instruction.IN_CALLDBPROC) {
@@ -217,7 +210,7 @@ public abstract class DBBuilderPiece {
       pstmt.setString(9, _dbProcName);
       pstmt.executeUpdate();
       // insertion SR_SCRIPTS
-      String[] subS = getSubStrings(content);
+      final String[] subS = getSubStrings(content);
       pstmt = connexion.prepareStatement("insert into SR_SCRIPTS(SR_ITEM_ID, SR_SEQ_NUM, SR_TEXT) "
           + "values (?, ?, ? )");
       for (int i = 0; i < subS.length; i++) {
@@ -238,9 +231,8 @@ public abstract class DBBuilderPiece {
   }
 
   public void executeSingleUpdate(String currentInstruction) throws Exception {
-    String printableInstruction = null;
     if (traceMode) {
-      printableInstruction = StringUtil.sReplace("\r\n", " ", currentInstruction);
+      String printableInstruction = StringUtil.sReplace("\r\n", " ", currentInstruction);
       printableInstruction = StringUtil.sReplace("\t", " ", printableInstruction);
       if (printableInstruction.length() > 147) {
         printableInstruction = printableInstruction.substring(0, 146) + "...";
@@ -254,15 +246,14 @@ public abstract class DBBuilderPiece {
     } catch (Exception e) {
       throw new Exception("\n\t\t***ERROR RETURNED BY THE RDBMS : "
           + e.getMessage() + "\n\t\t***STATEMENT ON ERROR IS : " + "\n"
-          + currentInstruction);
+          + currentInstruction + "\n\t\t" + pieceName, e);
     }
   }
 
-  public void executeSingleProcedure(String currentInstruction,
-      DbProcParameter[] params) throws Exception {
-    String printableInstruction = null;
+  public void executeSingleProcedure(String currentInstruction, DbProcParameter[] params)
+      throws Exception {
     if (traceMode) {
-      printableInstruction = StringUtil.sReplace("\n", " ", currentInstruction);
+      String printableInstruction = StringUtil.sReplace("\n", " ", currentInstruction);
       printableInstruction = StringUtil.sReplace("\t", " ",
           printableInstruction);
       if (printableInstruction.length() > 147) {
@@ -275,7 +266,7 @@ public abstract class DBBuilderPiece {
     } catch (Exception e) {
       throw new Exception("\n\t\t***ERROR RETURNED BY THE RDBMS : "
           + e.getMessage() + "\n\t\t***STATEMENT ON ERROR IS : " + "\n"
-          + currentInstruction);
+          + currentInstruction, e);
     }
   }
 
@@ -286,13 +277,13 @@ public abstract class DBBuilderPiece {
           + currentInstruction + "()");
     }
     ((DbBuilderDynamicPart) myClass).setConnection(connection);
-    Method methode = myClass.getClass().getMethod(currentInstruction, new Class[] {});
+    Method methode = myClass.getClass().getMethod(currentInstruction, new Class[]{});
     if (methode == null) {
       throw new Exception("No method \"" + currentInstruction
           + "\" defined for \"" + myClass.getClass().getName() + "\" class.");
     }
     try {
-      methode.invoke(myClass, new Class[] {});
+      methode.invoke(myClass, new Class[]{});
     } catch (Exception e) {
       throw new Exception("\n\t\t***ERROR RETURNED BY THE JVM : "
           + e.getMessage());
@@ -337,8 +328,8 @@ public abstract class DBBuilderPiece {
     StringBuilder dbContent = new StringBuilder("");
     try {
       connexion = ConnectionFactory.getConnection();
-      PreparedStatement pstmt = connexion.prepareStatement("select SR_SEQ_NUM, SR_TEXT from " +
-          "SR_SCRIPTS where SR_ITEM_ID = ? order by 1");
+      PreparedStatement pstmt = connexion.prepareStatement("select SR_SEQ_NUM, SR_TEXT from "
+          + "SR_SCRIPTS where SR_ITEM_ID = ? order by 1");
       pstmt.setString(1, itemID);
       ResultSet rs = pstmt.executeQuery();
       while (rs.next()) {
@@ -348,8 +339,8 @@ public abstract class DBBuilderPiece {
       pstmt.close();
     } catch (Exception e) {
       throw new Exception("\n\t\t***ERROR RETURNED BY THE JVM : "
-          + e.getMessage() + "\n\t\t\t(" + "select SR_SEQ_NUM, SR_TEXT from " +
-          "SR_SCRIPTS where SR_ITEM_ID = '" + itemID + "'  order by 1" + ")");
+          + e.getMessage() + "\n\t\t\t(" + "select SR_SEQ_NUM, SR_TEXT from "
+          + "SR_SCRIPTS where SR_ITEM_ID = '" + itemID + "'  order by 1" + ")");
     }
     return dbContent.toString();
   }

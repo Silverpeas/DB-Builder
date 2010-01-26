@@ -768,7 +768,7 @@ public class DBBuilder {
 
             blocks_merge = new VersionTag[iversionFile - iversionDB];
             for (int i = 0; i < iversionFile - iversionDB; i++) {
-              String sversionFile = new String("000" + (iversionDB + i));
+              String sversionFile = "000" + (iversionDB + i);
               sversionFile = sversionFile.substring(sversionFile.length() - 3);
               blocks_merge[i] = new VersionTag(DBBuilderFileItem.PREVIOUS_TAG, sversionFile);
             }
@@ -792,6 +792,7 @@ public class DBBuilder {
           try {
             xmlFile.mergeWith(pdbbuilderItem, tags_to_merge, blocks_merge);
           } catch (Exception e) {
+            displayMessage("Error with " + pdbbuilderItem.getModule() + " " + e.getMessage());
             e.printStackTrace();
           }
         }
@@ -932,20 +933,20 @@ public class DBBuilder {
     return DIR_TEMP;
   }
 
-  private static void processSQLFiles(Connection connection, Element moduleRoot,
-      String[] tagsToProcess, MetaInstructions metaInstructions) throws Exception {
+  private static void processSQLFiles(final Connection connection, final Element moduleRoot,
+      final String[] tagsToProcess, final MetaInstructions metaInstructions) throws Exception  {
     // piece de DB Builder
-    DBBuilderPiece p = null;
+    DBBuilderPiece dbBuilderPiece = null;
     for (int i = 0; i < tagsToProcess.length; i++) {
       int nbFiles = 0;
       // liste des pièces correspondant au i-eme tag a traiter
-      List<Element> listeTags = (List<Element>) moduleRoot.getChildren(tagsToProcess[i]);
+      final List<Element> listeTags = (List<Element>) moduleRoot.getChildren(tagsToProcess[i]);
       for (Element eltTag : listeTags) {
-        String nomTag = eltTag.getName();
+        final String nomTag = eltTag.getName();
         // -------------------------------------
         // TRAITEMENT DES PIECES DE TYPE DB
         // -------------------------------------
-        List<Element> listeRowFiles = (List<Element>) eltTag.getChildren(ROW_TAG);
+        final List<Element> listeRowFiles = (List<Element>) eltTag.getChildren(ROW_TAG);
         for (Element eltFile : listeRowFiles) {
           String name = eltFile.getAttributeValue(FILENAME_ATTRIB);
           String value = eltFile.getAttributeValue(FILETYPE_ATTRIB);
@@ -959,30 +960,28 @@ public class DBBuilder {
           nbFiles++;
           if (FILEATTRIBSTATEMENT_VALUE.equals(value)) {
             // piece de type Single Statement
-            p = new DBBuilderSingleStatementPiece(name, name + "(" + order + ")", nomTag, order.
+            dbBuilderPiece = new DBBuilderSingleStatementPiece(name, name + "(" + order + ")", nomTag, order.
                 intValue(), verbose);
           } else if (FILEATTRIBSEQUENCE_VALUE.equals(value)) {
             // piece de type Single Statement
-            p = new DBBuilderMultipleStatementPiece(name, name + "(" + order + ")", nomTag, order.
+            dbBuilderPiece = new DBBuilderMultipleStatementPiece(name, name + "(" + order + ")", nomTag, order.
                 intValue(), verbose, delimiter, keepdelimiter);
           } else if (FILEATTRIBDBPROC_VALUE.equals(value)) {
             // piece de type Database Procedure
-            p = new DBBuilderDBProcPiece(name, name + "(" + order + ")", nomTag,
+            dbBuilderPiece = new DBBuilderDBProcPiece(name, name + "(" + order + ")", nomTag,
                 order.intValue(), verbose, dbprocname);
 
           }
-          if (p != null) {
-            p.executeInstructions(connection);
+          if (dbBuilderPiece != null) {
+            dbBuilderPiece.executeInstructions(connection);
           }
         }
 
         // -------------------------------------
         // TRAITEMENT DES PIECES DE TYPE FICHIER
         // -------------------------------------
-        List listeFiles = eltTag.getChildren(FILE_TAG);
-        Iterator iterFiles = listeFiles.iterator();
-        while (iterFiles.hasNext()) {
-          Element eltFile = (Element) iterFiles.next();
+        final List<Element> listeFiles = (List<Element>) eltTag.getChildren(FILE_TAG);
+        for(Element eltFile : listeFiles) {
           String name = getCleanPath(eltFile.getAttributeValue(FILENAME_ATTRIB));
           String value = eltFile.getAttributeValue(FILETYPE_ATTRIB);
           String delimiter = eltFile.getAttributeValue(FILEDELIMITER_ATTRIB);
@@ -996,22 +995,22 @@ public class DBBuilder {
           nbFiles++;
           if (FILEATTRIBSTATEMENT_VALUE.equals(value)) {
             // piece de type Single Statement
-            p = new DBBuilderSingleStatementPiece(DIR_DBPIECESFILESROOT + File.separator + name,
+            dbBuilderPiece = new DBBuilderSingleStatementPiece(DIR_DBPIECESFILESROOT + File.separator + name,
                 nomTag, verbose);
           } else if (FILEATTRIBSEQUENCE_VALUE.equals(value)) {
-            p = new DBBuilderMultipleStatementPiece(DIR_DBPIECESFILESROOT + File.separator + name,
+            dbBuilderPiece = new DBBuilderMultipleStatementPiece(DIR_DBPIECESFILESROOT + File.separator + name,
                 nomTag, verbose, delimiter, keepdelimiter);
           } else if (FILEATTRIBDBPROC_VALUE.equals(value)) {
             // piece de type Database Procedure
-            p = new DBBuilderDBProcPiece(DIR_DBPIECESFILESROOT + File.separator + name, nomTag,
+            dbBuilderPiece = new DBBuilderDBProcPiece(DIR_DBPIECESFILESROOT + File.separator + name, nomTag,
                 verbose, dbprocname);
           } else if (FILEATTRIBJAVALIB_VALUE.equals(value)) {
             // piece de type Java invoke
-            p = new DBBuilderDynamicLibPiece(DIR_DBPIECESFILESROOT + File.separator + name,
+            dbBuilderPiece = new DBBuilderDynamicLibPiece(DIR_DBPIECESFILESROOT + File.separator + name,
                 nomTag, verbose, classname, methodname);
           }
-          if (p != null) {
-            p.executeInstructions(connection);
+          if (dbBuilderPiece != null) {
+            dbBuilderPiece.executeInstructions(connection);
           }
         }
       }
@@ -1019,11 +1018,11 @@ public class DBBuilder {
         displayMessageln("\t" + tagsToProcess[i] + " : (none)");
       }
     }
-    List<SQLInstruction> sqlMetaInstructions =
+    final List<SQLInstruction> sqlMetaInstructions =
         metaInstructions.getInstructions(moduleRoot.getAttributeValue(
         DBXmlDocument.ATT_MODULE_ID));
     // Mise à jour des versions en base
-    if (sqlMetaInstructions.size() == 0) {
+    if (sqlMetaInstructions.isEmpty()) {
       displayMessageln("\tdbbuilder meta base maintenance : (none)");
     } else {
       displayMessageln("\tdbbuilder meta base maintenance :");
