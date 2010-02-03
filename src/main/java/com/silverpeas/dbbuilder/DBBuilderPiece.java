@@ -28,7 +28,7 @@ import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.lang.reflect.Method;
 
-import com.silverpeas.FileUtil.StringUtil;
+import com.silverpeas.file.StringUtil;
 import com.silverpeas.dbbuilder.sql.ConnectionFactory;
 import com.silverpeas.dbbuilder.sql.QueryExecutor;
 import com.silverpeas.dbbuilder.sql.DbProcParameter;

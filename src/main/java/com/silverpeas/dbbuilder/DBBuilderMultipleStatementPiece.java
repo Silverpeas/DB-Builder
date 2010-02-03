@@ -24,7 +24,7 @@
 package com.silverpeas.dbbuilder;
 
 import java.util.Vector;
-import com.silverpeas.FileUtil.StringUtil;
+import com.silverpeas.file.StringUtil;
 import java.sql.Connection;
 
 /**

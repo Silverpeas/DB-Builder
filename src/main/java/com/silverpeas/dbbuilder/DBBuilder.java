@@ -33,8 +33,8 @@
  */
 package com.silverpeas.dbbuilder;
 
-import com.silverpeas.FileUtil.FileUtil;
-import com.silverpeas.FileUtil.StringUtil;
+import com.silverpeas.file.FileUtil;
+import com.silverpeas.file.StringUtil;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
