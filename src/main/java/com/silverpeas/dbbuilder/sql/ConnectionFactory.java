@@ -24,10 +24,12 @@
 package com.silverpeas.dbbuilder.sql;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import javax.sql.DataSource;
 
 /**
+ * Utility class for obtaining a connection to the database.
  * @author ehugonnet
  */
 public class ConnectionFactory {
@@ -58,4 +60,23 @@ public class ConnectionFactory {
     return instance.datasource.getConnection();
   }
 
+  public static String getConnectionInfo() throws SQLException {
+    StringBuilder builder = new StringBuilder();
+    Connection connection = null;
+    try {
+      connection = getConnection();
+      DatabaseMetaData metaData = connection.getMetaData();
+      String newLine = System.getProperty("line.separator");
+      builder.append(newLine).append("\tRDBMS         : ").append(metaData.getDatabaseProductName());
+      builder.append(newLine).append("\tJdbcUrl       : ").append(metaData.getURL());
+      builder.append(newLine).append("\tJdbcDriver    : ").append(metaData.getDriverName());
+      builder.append(newLine).append("\tUserName      : ").append(metaData.getUserName());
+    } finally {
+      if (connection != null) {
+        connection.close();
+      }
+    }
+
+    return builder.toString();
+  }
 }
