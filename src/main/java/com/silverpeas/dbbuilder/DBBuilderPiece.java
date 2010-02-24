@@ -277,13 +277,13 @@ public abstract class DBBuilderPiece {
           + currentInstruction + "()");
     }
     ((DbBuilderDynamicPart) myClass).setConnection(connection);
-    Method methode = myClass.getClass().getMethod(currentInstruction, new Class[]{});
+    Method methode = myClass.getClass().getMethod(currentInstruction, new Class[] {});
     if (methode == null) {
       throw new Exception("No method \"" + currentInstruction
           + "\" defined for \"" + myClass.getClass().getName() + "\" class.");
     }
     try {
-      methode.invoke(myClass, new Class[]{});
+      methode.invoke(myClass, new Class[] {});
     } catch (Exception e) {
       throw new Exception("\n\t\t***ERROR RETURNED BY THE JVM : "
           + e.getMessage());

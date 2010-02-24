@@ -28,8 +28,8 @@ import java.util.List;
 import org.jdom.Element;
 
 /**
- * Titre : dbBuilder Description : Builder des BDs Silverpeas Copyright : Copyright (c) 2001
- * Société : Stratélia Silverpeas
+ * Titre : dbBuilder Description : Builder des BDs Silverpeas Copyright : Copyright (c) 2001 Société
+ * : Stratélia Silverpeas
  * @author ATH
  * @version 1.0
  */

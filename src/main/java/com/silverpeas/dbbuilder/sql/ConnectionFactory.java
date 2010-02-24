@@ -67,7 +67,8 @@ public class ConnectionFactory {
       connection = getConnection();
       DatabaseMetaData metaData = connection.getMetaData();
       String newLine = System.getProperty("line.separator");
-      builder.append(newLine).append("\tRDBMS         : ").append(metaData.getDatabaseProductName());
+      builder.append(newLine).append("\tRDBMS         : ")
+          .append(metaData.getDatabaseProductName());
       builder.append(newLine).append("\tJdbcUrl       : ").append(metaData.getURL());
       builder.append(newLine).append("\tJdbcDriver    : ").append(metaData.getDriverName());
       builder.append(newLine).append("\tUserName      : ").append(metaData.getUserName());

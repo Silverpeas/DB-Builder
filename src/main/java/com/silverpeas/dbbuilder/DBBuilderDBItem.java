@@ -45,9 +45,9 @@ public class DBBuilderDBItem extends DBBuilderItem {
 
   private static final String SELECT_CONTENT_FROM_DB =
       "select SR_ITEM_ID, SR_ACTION_TAG, SR_ITEM_ORDER, SR_FILE_NAME, SR_FILE_TYPE, SR_DELIMITER, "
-          +
-          "SR_KEEP_DELIMITER, SR_DBPROC_NAME from SR_UNINSTITEMS where SR_PACKAGE = ? order by " +
-          "SR_ACTION_TAG, SR_ITEM_ORDER ";
+      +
+      "SR_KEEP_DELIMITER, SR_DBPROC_NAME from SR_UNINSTITEMS where SR_PACKAGE = ? order by " +
+      "SR_ACTION_TAG, SR_ITEM_ORDER ";
 
   private List<Map<String, Object>> dbInfos;
   protected static final String TEMP_DBCONTRIBUTION_FILE = "temp-contribution.xml";
@@ -136,7 +136,7 @@ public class DBBuilderDBItem extends DBBuilderItem {
       connexion = ConnectionFactory.getConnection();
       infos =
           QueryExecutor.executeLoopQuery(connexion, SELECT_CONTENT_FROM_DB,
-              new Object[] { getModule() });
+          new Object[] { getModule() });
     } catch (Exception e) {
       throw new Exception("\n\t\t***ERROR RETURNED BY THE JVM : " + e.getMessage() + "\n\t\t\t(" +
           SELECT_CONTENT_FROM_DB + ")");
