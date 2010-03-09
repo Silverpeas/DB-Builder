@@ -33,8 +33,8 @@
  */
 package com.silverpeas.dbbuilder;
 
+import com.silverpeas.dbbuilder.util.Configuration;
 import com.silverpeas.dbbuilder.util.Action;
-import java.io.InputStream;
 import com.silverpeas.file.FileUtil;
 import com.silverpeas.file.StringUtil;
 import java.io.BufferedWriter;
@@ -85,11 +85,6 @@ public class DBBuilder {
   static Date TODAY = new java.util.Date();
   // Version application
   public static final String DBBuilderAppVersion = "V5";
-  // Installation
-  private static final String HOME_KEY = "dbbuilder.home";
-  private static String dbbuilderHome = null;
-  private static final String DATA_KEY = "dbbuilder.data";
-  private static String dbbuilderData = null;
   // Fichier log
   protected static File fileLog = null;
   protected static PrintWriter bufLog = null;
@@ -123,19 +118,6 @@ public class DBBuilder {
   private static final String[] TAGS_TO_MERGE_4_OPTIMIZE = {
     DBBuilderFileItem.DROP_INDEX_TAG,
     DBBuilderFileItem.CREATE_INDEX_TAG};
-  private static final String DBREPOSITORY_SUBDIR = "dbRepository"; // entrée sur l'arborescence
-  // dbRepository
-  private static final String CONTRIB_FILES_SUBDIR = "data"; // sous répertoire data
-  private static final String LOG_FILES_SUBDIR = "log"; // sous répertoire log
-  private static final String TEMP_FILES_SUBDIR = "temp"; // sous répertoire temp
-  // Répertoire des DB Contribution Files
-  private static final String DIR_CONTRIBUTIONFILESROOT = getHome()
-          + File.separator + DBREPOSITORY_SUBDIR + File.separator + CONTRIB_FILES_SUBDIR;
-  // Répertoire racine des DB Pieces Contribution File
-  private static final String DIR_DBPIECESFILESROOT =
-          getHome() + File.separator + DBREPOSITORY_SUBDIR;
-  // Répertoire temp
-  private static final String DIR_TEMP = getHome() + File.separator + TEMP_FILES_SUBDIR;
   protected static final String FIRST_DBCONTRIBUTION_FILE = "dbbuilder-contribution.xml";
   protected static final String MASTER_DBCONTRIBUTION_FILE = "master-contribution.xml";
   protected static final String REQUIREMENT_TAG = "requirement"; // pré requis à vérifier pour
@@ -164,27 +146,15 @@ public class DBBuilder {
       System.out.println("Start Database build using Silverpeas DBBuilder v. "
               + DBBuilderAppVersion + " (" + TODAY + ").");
       fileLog =
-              new File(getHome() + File.separator + LOG_FILES_SUBDIR + File.separator + "DBBuilder.log");
+              new File(Configuration.getLogDir() + File.separator + "DBBuilder.log");
       fileLog.getParentFile().mkdirs();
       bufLog = new PrintWriter(new BufferedWriter(new FileWriter(fileLog.getAbsolutePath(), true)));
       displayMessageln(NEW_LINE + "*************************************************************");
       displayMessageln("Start Database Build using Silverpeas DBBuilder v. " + DBBuilderAppVersion
               + " (" + TODAY + ").");
-
       // Lecture des variables d'environnement à partir de dbBuilderSettings
-      try {
-        InputStream in = DBBuilder.class.getClassLoader().getResourceAsStream(
-                "com/stratelia/silverpeas/dbBuilder/settings/dbBuilderSettings.properties");
-        if (in != null) {
-          dbBuilderResources.load(in);
-          in.close();
-        }
-      } catch (java.util.MissingResourceException e) {
-        // fichier de ressources absent -> pas grave
-        dbBuilderResources = null;
-      }
-      // remarque : toute autre erreur est fatale -> elle sera catchée ds le try global
-
+      dbBuilderResources = Configuration.loadResource(
+              "/com/stratelia/silverpeas/dbBuilder/settings/dbBuilderSettings.properties");
       // Lecture des paramètres d'entrée
       params = new CommandLineParameters(args);
 
@@ -202,8 +172,8 @@ public class DBBuilder {
       if (Action.ACTION_CONNECT == params.getAction()) {
         // un petit message et puis c'est tout
         displayMessageln(NEW_LINE);
-        displayMessageln("Database successfully connected.");
-        System.out.println(NEW_LINE + "Database successfully connected.");
+        displayMessageln("Connection to database successfull.");
+        System.out.println(NEW_LINE + "Connection to database successfull.");
       } else {
         // Modules en place sur la BD avant install
         displayMessageln(NEW_LINE + "DB Status before build :");
@@ -394,8 +364,8 @@ public class DBBuilder {
       }
 
       displayMessageln(NEW_LINE);
-      displayMessageln("Database build successfully done(" + TODAY + ").");
-      System.out.println(NEW_LINE + "Database build successfully done (" + TODAY + ").");
+      displayMessageln("Database build SUCCESSFULL (" + TODAY + ").");
+      System.out.println(NEW_LINE + "Database Build SUCCESSFULL (" + TODAY + ").");
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -403,8 +373,8 @@ public class DBBuilder {
       displayMessageln(e.getMessage());
       // e.printStackTrace();
       displayMessageln(NEW_LINE);
-      displayMessageln("Database build failed (" + TODAY + ").");
-      System.out.println(NEW_LINE + "Database build failed (" + TODAY + ").");
+      displayMessageln("Database Build FAILED (" + TODAY + ").");
+      System.out.println(NEW_LINE + "Database Build FAILED (" + TODAY + ").");
     } finally {
       bufLog.close();
     }
@@ -511,7 +481,7 @@ public class DBBuilder {
   }
 
   public static String getDBContributionDir() {
-    return DIR_CONTRIBUTIONFILESROOT.concat(File.separator + params.getDbType());
+    return Configuration.getContributionFilesDir() + File.separatorChar + params.getDbType();
   }
 
   private static void mergeActionsToDo(DBBuilderItem pdbbuilderItem, DBXmlDocument xmlFile,
@@ -715,35 +685,6 @@ public class DBBuilder {
     return packagesIntoDB;
   }
 
-  // Récupère le répertoire racine d'installation
-  public static String getHome() {
-    if (dbbuilderHome == null) {
-      if (!System.getProperties().containsKey(HOME_KEY)) {
-        System.err.println("### CANNOT FIND DBBUILDER INSTALL LOCATION ###");
-        System.err.println("please use \"-D" + HOME_KEY
-                + "=<install location>\" on the command line");
-        System.exit(1);
-      }
-      dbbuilderHome = System.getProperty(HOME_KEY);
-    }
-    return dbbuilderHome;
-  }
-
-  // Récupère le répertoire data d'installation
-  public static String getData() {
-    if (dbbuilderData == null) {
-      if (System.getProperties().containsKey(DATA_KEY)) {
-        dbbuilderData = System.getProperty(DATA_KEY);
-      }
-    }
-    return dbbuilderData;
-  }
-
-  // Récupère le répertoire temp
-  public static String getTemp() {
-    return DIR_TEMP;
-  }
-
   private static void processSQLFiles(final Connection connection, final Element moduleRoot,
           final String[] tagsToProcess, final MetaInstructions metaInstructions) throws Exception {
     // piece de DB Builder
@@ -808,21 +749,21 @@ public class DBBuilder {
           if (FILEATTRIBSTATEMENT_VALUE.equals(value)) {
             // piece de type Single Statement
             dbBuilderPiece =
-                    new DBBuilderSingleStatementPiece(DIR_DBPIECESFILESROOT + File.separator + name,
+                    new DBBuilderSingleStatementPiece(Configuration.getPiecesFilesDir() + File.separatorChar + name,
                     nomTag, params.isVerbose());
           } else if (FILEATTRIBSEQUENCE_VALUE.equals(value)) {
             dbBuilderPiece =
-                    new DBBuilderMultipleStatementPiece(DIR_DBPIECESFILESROOT + File.separator + name,
+                    new DBBuilderMultipleStatementPiece(Configuration.getPiecesFilesDir() + File.separatorChar + name,
                     nomTag, params.isVerbose(), delimiter, keepdelimiter);
           } else if (FILEATTRIBDBPROC_VALUE.equals(value)) {
             // piece de type Database Procedure
             dbBuilderPiece =
-                    new DBBuilderDBProcPiece(DIR_DBPIECESFILESROOT + File.separator + name, nomTag,
+                    new DBBuilderDBProcPiece(Configuration.getPiecesFilesDir() + File.separatorChar + name, nomTag,
                     params.isVerbose(), dbprocname);
           } else if (FILEATTRIBJAVALIB_VALUE.equals(value)) {
             // piece de type Java invoke
             dbBuilderPiece =
-                    new DBBuilderDynamicLibPiece(DIR_DBPIECESFILESROOT + File.separator + name,
+                    new DBBuilderDynamicLibPiece(Configuration.getPiecesFilesDir() + File.separatorChar + name,
                     nomTag, params.isVerbose(), classname, methodname);
           }
           if (dbBuilderPiece != null) {
@@ -889,18 +830,18 @@ public class DBBuilder {
                       + valueU);
               if (valueU.equals(FILEATTRIBSTATEMENT_VALUE)) {
                 // piece de type Single Statement
-                pU = new DBBuilderSingleStatementPiece(DIR_DBPIECESFILESROOT + File.separator
+                pU = new DBBuilderSingleStatementPiece(Configuration.getPiecesFilesDir() + File.separatorChar
                         + nameU, tagsToProcessU[i], params.isVerbose());
                 pU.cacheIntoDB(connection, pName, iFile);
               } else if (valueU.equals(FILEATTRIBSEQUENCE_VALUE)) {
                 // piece de type Single Statement
-                pU = new DBBuilderMultipleStatementPiece(DIR_DBPIECESFILESROOT + File.separator
+                pU = new DBBuilderMultipleStatementPiece(Configuration.getPiecesFilesDir() + File.separatorChar
                         + nameU, tagsToProcessU[i], params.isVerbose(), delimiterU,
                         keepdelimiterU);
                 pU.cacheIntoDB(connection, pName, iFile);
               } else if (valueU.equals(FILEATTRIBDBPROC_VALUE)) {
                 // piece de type Database Procedure
-                pU = new DBBuilderDBProcPiece(DIR_DBPIECESFILESROOT + File.separator + nameU,
+                pU = new DBBuilderDBProcPiece(Configuration.getPiecesFilesDir() + File.separatorChar + nameU,
                         tagsToProcessU[i], params.isVerbose(), dbprocnameU);
                 pU.cacheIntoDB(connection, pName, iFile);
               }
@@ -917,9 +858,7 @@ public class DBBuilder {
   }
 
   private static String getCleanPath(String name) {
-    if (File.separatorChar == '/') {
-      return StringUtil.sReplace("\\", "/", name);
-    }
-    return StringUtil.sReplace("/", "\\", name);
+    String path = name.replace('/', File.separatorChar);
+    return path.replace('\\', File.separatorChar);
   }
 }

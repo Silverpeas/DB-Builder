@@ -24,6 +24,7 @@
 package com.silverpeas.dbbuilder;
 
 import com.silverpeas.dbbuilder.dbbuilder_dl.DbBuilderDynamicPart;
+import com.silverpeas.dbbuilder.util.Configuration;
 import java.sql.Connection;
 
 public class DBBuilderDynamicLibPiece extends DBBuilderPiece {
@@ -75,8 +76,8 @@ public class DBBuilderDynamicLibPiece extends DBBuilderPiece {
     } catch (Exception e) {
       throw new Exception("Unable to load \"" + className + "\" class.");
     } // try
-    dynamicPart.setSILVERPEAS_HOME(DBBuilder.getHome());
-    dynamicPart.setSILVERPEAS_DATA(DBBuilder.getData());
+    dynamicPart.setSILVERPEAS_HOME(Configuration.getHome());
+    dynamicPart.setSILVERPEAS_DATA(Configuration.getData());
     setInstructions();
   }
 

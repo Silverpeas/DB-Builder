@@ -34,6 +34,7 @@ package com.silverpeas.dbbuilder;
 
 import com.silverpeas.dbbuilder.sql.ConnectionFactory;
 import com.silverpeas.dbbuilder.sql.QueryExecutor;
+import com.silverpeas.dbbuilder.util.Configuration;
 import java.io.File;
 import java.io.OutputStreamWriter;
 import java.io.FileOutputStream;
@@ -58,7 +59,7 @@ public class DBBuilderDBItem extends DBBuilderItem {
     // lecture from base des items
     dbInfos = getContentFromDB();
     // construit un fichier xml temporaire avec toutes les infos nécessaires
-    File f = new File(DBBuilder.getTemp() + File.separator + TEMP_DBCONTRIBUTION_FILE);
+    File f = new File(Configuration.getTemp() + File.separator + TEMP_DBCONTRIBUTION_FILE);
     if (!f.getParentFile().exists()) {
       f.getParentFile().mkdirs();
     }
@@ -112,8 +113,8 @@ public class DBBuilderDBItem extends DBBuilderItem {
     out.write("</contribution>\n");
     out.close();
 
-    DBXmlDocument destXml =
-        new DBXmlDocument(new File(DBBuilder.getTemp()), TEMP_DBCONTRIBUTION_FILE);
+    DBXmlDocument destXml = new DBXmlDocument(new File(Configuration.getTemp()),
+            TEMP_DBCONTRIBUTION_FILE);
     destXml.load();
 
     setFileXml(destXml);
