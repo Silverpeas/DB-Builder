@@ -86,6 +86,7 @@ public class DBBuilderDBProcPiece extends DBBuilderPiece {
     setInstructions();
   }
 
+  @Override
   public void setInstructions() {
 
     instructions = new Instruction[3];
@@ -96,6 +97,7 @@ public class DBBuilderDBProcPiece extends DBBuilderPiece {
         + this.dbProcName, null);
   }
 
+  @Override
   public void cacheIntoDB(Connection connection, String _package, int _itemOrder) throws Exception {
     cacheIntoDB(connection, _package, _itemOrder, DBBuilderFileItem.FILEATTRIBDBPROC_VALUE,
         null, null, dbProcName);

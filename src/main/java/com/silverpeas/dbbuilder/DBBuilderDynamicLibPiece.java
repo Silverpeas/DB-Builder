@@ -25,12 +25,13 @@ package com.silverpeas.dbbuilder;
 
 import com.silverpeas.dbbuilder.dbbuilder_dl.DbBuilderDynamicPart;
 import com.silverpeas.dbbuilder.util.Configuration;
+import com.silverpeas.dbbuilder.util.DynamicLoader;
 import java.sql.Connection;
 
 public class DBBuilderDynamicLibPiece extends DBBuilderPiece {
+  private String method;
 
-  private String className = null;
-  private String methodName = null;
+  private static DynamicLoader loader = new DynamicLoader();
   private DbBuilderDynamicPart dynamicPart = null;
 
   // contructeurs non utilisés
@@ -67,12 +68,10 @@ public class DBBuilderDynamicLibPiece extends DBBuilderPiece {
     if (methodName == null) {
       throw new Exception("Missing <methodname> tag for \"pieceName\" item.");
     }
-    this.className = className;
-    this.methodName = methodName;
+   
     try {
-      dynamicPart = (DbBuilderDynamicPart) Class.forName(className)
-          .newInstance();
-
+      dynamicPart = loader.loadDynamicPart(className);
+      method = methodName;
     } catch (Exception e) {
       throw new Exception("Unable to load \"" + className + "\" class.");
     } // try
@@ -81,12 +80,13 @@ public class DBBuilderDynamicLibPiece extends DBBuilderPiece {
     setInstructions();
   }
 
+  @Override
   public void setInstructions() {
     instructions = new Instruction[1];
-    instructions[0] = new Instruction(Instruction.IN_INVOKEJAVA, methodName,
-        dynamicPart);
+    instructions[0] = new Instruction(Instruction.IN_INVOKEJAVA, method, dynamicPart);
   }
 
+  @Override
   public void cacheIntoDB(Connection connection, String _package, int _itemOrder) throws Exception {
     // rien à cacher pour une proc dynamique
   }
