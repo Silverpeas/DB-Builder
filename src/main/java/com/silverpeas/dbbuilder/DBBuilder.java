@@ -9,7 +9,7 @@
  * As a special exception to the terms and conditions of version 3.0 of
  * the GPL, you may redistribute this Program in connection with Free/Libre
  * Open Source Software ("FLOSS") applications as described in Silverpeas's
- * FLOSS exception.  You should have recieved a copy of the text describing
+ * FLOSS exception.  You should have received a copy of the text describing
  * the FLOSS exception, and it is also available here:
  * "http://repository.silverpeas.com/legal/licensing"
  *
@@ -21,6 +21,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /**
  * Titre :        dbBuilder
  * Description :  Builder des BDs Silverpeas
@@ -96,27 +97,27 @@ public class DBBuilder {
   static public final String DROP_CONSTRAINT_TAG = "drop_constraint";
   static public final String DROP_DATA_TAG = "clean";
   private static final String[] TAGS_TO_MERGE_4_INSTALL = {
-    DBBuilderFileItem.CREATE_TABLE_TAG,
-    DBBuilderFileItem.CREATE_INDEX_TAG,
-    DBBuilderFileItem.CREATE_CONSTRAINT_TAG,
-    DBBuilderFileItem.CREATE_DATA_TAG};
+      DBBuilderFileItem.CREATE_TABLE_TAG,
+      DBBuilderFileItem.CREATE_INDEX_TAG,
+      DBBuilderFileItem.CREATE_CONSTRAINT_TAG,
+      DBBuilderFileItem.CREATE_DATA_TAG };
   private static final String[] TAGS_TO_MERGE_4_UNINSTALL = {
-    DBBuilderFileItem.DROP_CONSTRAINT_TAG,
-    DBBuilderFileItem.DROP_INDEX_TAG,
-    DBBuilderFileItem.DROP_DATA_TAG,
-    DBBuilderFileItem.DROP_TABLE_TAG};
+      DBBuilderFileItem.DROP_CONSTRAINT_TAG,
+      DBBuilderFileItem.DROP_INDEX_TAG,
+      DBBuilderFileItem.DROP_DATA_TAG,
+      DBBuilderFileItem.DROP_TABLE_TAG };
   private static final String[] TAGS_TO_MERGE_4_ALL = {
-    DBBuilderFileItem.DROP_CONSTRAINT_TAG,
-    DBBuilderFileItem.DROP_INDEX_TAG,
-    DBBuilderFileItem.DROP_DATA_TAG,
-    DBBuilderFileItem.DROP_TABLE_TAG,
-    DBBuilderFileItem.CREATE_TABLE_TAG,
-    DBBuilderFileItem.CREATE_INDEX_TAG,
-    DBBuilderFileItem.CREATE_CONSTRAINT_TAG,
-    DBBuilderFileItem.CREATE_DATA_TAG};
+      DBBuilderFileItem.DROP_CONSTRAINT_TAG,
+      DBBuilderFileItem.DROP_INDEX_TAG,
+      DBBuilderFileItem.DROP_DATA_TAG,
+      DBBuilderFileItem.DROP_TABLE_TAG,
+      DBBuilderFileItem.CREATE_TABLE_TAG,
+      DBBuilderFileItem.CREATE_INDEX_TAG,
+      DBBuilderFileItem.CREATE_CONSTRAINT_TAG,
+      DBBuilderFileItem.CREATE_DATA_TAG };
   private static final String[] TAGS_TO_MERGE_4_OPTIMIZE = {
-    DBBuilderFileItem.DROP_INDEX_TAG,
-    DBBuilderFileItem.CREATE_INDEX_TAG};
+      DBBuilderFileItem.DROP_INDEX_TAG,
+      DBBuilderFileItem.CREATE_INDEX_TAG };
   protected static final String FIRST_DBCONTRIBUTION_FILE = "dbbuilder-contribution.xml";
   protected static final String MASTER_DBCONTRIBUTION_FILE = "master-contribution.xml";
   protected static final String REQUIREMENT_TAG = "requirement"; // pré requis à vérifier pour
@@ -293,7 +294,7 @@ public class DBBuilder {
         List<String> itemsList = new ArrayList<String>();
 
         boolean foundDBBuilder = false;
-        for(String p : packagesIntoDB) {
+        for (String p : packagesIntoDB) {
           if (!packagesIntoFile.containsKey(p)) {
             // Package en base et non en contribution -> candidat à desinstallation
             if (DBBUILDER_MODULE.equalsIgnoreCase(p)) // le module a desinstaller est dbbuilder, on
@@ -320,7 +321,7 @@ public class DBBuilder {
             itemsList.add(itemsList.size(), DBBUILDER_MODULE);
           }
         }
-        for(String p : itemsList) {
+        for (String p : itemsList) {
           displayMessageln("**** Treating " + p + " ****");
           DBBuilderDBItem tmpdbbuilderItem = new DBBuilderDBItem(p);
           mergeActionsToDo(tmpdbbuilderItem, destXml, processesToCacheIntoDB, sqlMetaInstructions);
@@ -836,14 +837,18 @@ public class DBBuilder {
                   + valueU);
               if (valueU.equals(FILEATTRIBSTATEMENT_VALUE)) {
                 // piece de type Single Statement
-                pU = new DBBuilderSingleStatementPiece(Configuration.getPiecesFilesDir() + File.separatorChar
-                    + nameU, tagsToProcessU[i], params.isVerbose());
+                pU =
+                    new DBBuilderSingleStatementPiece(Configuration.getPiecesFilesDir() +
+                        File.separatorChar
+                        + nameU, tagsToProcessU[i], params.isVerbose());
                 pU.cacheIntoDB(connection, pName, iFile);
               } else if (valueU.equals(FILEATTRIBSEQUENCE_VALUE)) {
                 // piece de type Single Statement
-                pU = new DBBuilderMultipleStatementPiece(Configuration.getPiecesFilesDir() + File.separatorChar
-                    + nameU, tagsToProcessU[i], params.isVerbose(), delimiterU,
-                    keepdelimiterU);
+                pU =
+                    new DBBuilderMultipleStatementPiece(Configuration.getPiecesFilesDir() +
+                        File.separatorChar
+                        + nameU, tagsToProcessU[i], params.isVerbose(), delimiterU,
+                        keepdelimiterU);
                 pU.cacheIntoDB(connection, pName, iFile);
               } else if (valueU.equals(FILEATTRIBDBPROC_VALUE)) {
                 // piece de type Database Procedure

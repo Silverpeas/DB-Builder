@@ -9,7 +9,7 @@
  * As a special exception to the terms and conditions of version 3.0 of
  * the GPL, you may redistribute this Program in connection with Free/Libre
  * Open Source Software ("FLOSS") applications as described in Silverpeas's
- * FLOSS exception.  You should have recieved a copy of the text describing
+ * FLOSS exception.  You should have received a copy of the text describing
  * the FLOSS exception, and it is also available here:
  * "http://repository.silverpeas.com/legal/licensing"
  *
@@ -21,6 +21,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package com.silverpeas.dbbuilder;
 
 import com.silverpeas.applicationbuilder.AppBuilderException;
@@ -87,7 +88,7 @@ public class DBXmlDocument extends ApplicationBuilderItem {
   /**
    * Save the document tree in the file item
    * @since 1.0
-   * @throws AppBuilderException 
+   * @throws AppBuilderException
    * @roseuid 3AAF323B0003
    */
   public void save() throws AppBuilderException {
@@ -101,8 +102,8 @@ public class DBXmlDocument extends ApplicationBuilderItem {
 
   /**
    * Save the document tree to a stream. This is convenient for writing in an archive
-   * @param outStream 
-   * @throws AppBuilderException 
+   * @param outStream
+   * @throws AppBuilderException
    * @roseuid 3AAF41A601C1
    */
   public void saveTo(OutputStream outStream) throws AppBuilderException {
@@ -116,7 +117,7 @@ public class DBXmlDocument extends ApplicationBuilderItem {
 
   /**
    * Loads the document tree from the file system
-   * @throws AppBuilderException 
+   * @throws AppBuilderException
    * @roseuid 3AAF337D004C
    */
   public void load() throws AppBuilderException {
@@ -141,7 +142,7 @@ public class DBXmlDocument extends ApplicationBuilderItem {
    * Loads the document tree from the contents of an XML file provided as a stream. This can happen
    * when loading from an archive.
    * @param xmlStream the contents of an XML file
-   * @throws AppBuilderException 
+   * @throws AppBuilderException
    * @throws IOException
    * @since 1.0
    * @roseuid 3AAF4099035F
@@ -165,8 +166,8 @@ public class DBXmlDocument extends ApplicationBuilderItem {
    * concerned by the array of tags from all the documents to merge and adds them to the resulting
    * document. <strong>In the resulting document, the comments, processing instructions and entities
    * are removed.</strong>
-   * @param tagsToMerge 
-   * @param XmlFile 
+   * @param tagsToMerge
+   * @param XmlFile
    * @throws AppBuilderException
    * @roseuid 3AAF3793006E
    */
@@ -200,8 +201,8 @@ public class DBXmlDocument extends ApplicationBuilderItem {
   /**
    * Sorts the children elements of the document root according to the array order. The tags not
    * found in the array remain in the same order but at the beginning of the document
-   * @param tagsToSort 
-   * @throws AppBuilderException 
+   * @param tagsToSort
+   * @throws AppBuilderException
    * @roseuid 3AAF3986038D
    */
   public void sort(String[] tagsToSort) throws AppBuilderException {
@@ -265,7 +266,7 @@ public class DBXmlDocument extends ApplicationBuilderItem {
   }
 
   /**
-   * @param doc 
+   * @param doc
    * @since 1.0
    * @roseuid 3AB0FA640395
    */
@@ -276,7 +277,7 @@ public class DBXmlDocument extends ApplicationBuilderItem {
   /**
    * Gets the size of the resulting xml document
    * @return the size of the document in memory, given the encoding, <code>-1</code> if unknown.
-   * @throws AppBuilderException 
+   * @throws AppBuilderException
    */
   public long getDocumentSize() throws AppBuilderException {
     if (getDocument() != null) {
@@ -297,8 +298,8 @@ public class DBXmlDocument extends ApplicationBuilderItem {
    * For each element in the tagsToFind arry, looks for the attribute and return its value - the
    * name of the element if the attribute is not found
    * @param tagsToFind
-   * @param attribute 
-   * @return 
+   * @param attribute
+   * @return
    * @throws AppBuilderException
    */
   public String[] getAttributeValues(String[] tagsToFind, String attribute)
@@ -347,7 +348,7 @@ public class DBXmlDocument extends ApplicationBuilderItem {
   /**
    * Looks for all the elements with the given tag in the root element and its children. returns
    * <code>null</code> if nothing was found The values are unique in the array returned
-   * @param tagToFind 
+   * @param tagToFind
    * @return the array of all the values found
    */
   public String[] getTagValues(String tagToFind) {
@@ -369,7 +370,7 @@ public class DBXmlDocument extends ApplicationBuilderItem {
   /**
    * Looks for all the attributes with the given name in the root element and its children. returns
    * <code>null</code> if nothing was found. The values are unique in the array returned
-   * @param attributeToFind 
+   * @param attributeToFind
    * @return the array of all the values found
    */
   public String[] getAttributeValues(String attributeToFind) {
@@ -410,13 +411,13 @@ public class DBXmlDocument extends ApplicationBuilderItem {
    * concerned by the array of tags from all the documents to merge and adds them to the resulting
    * document. <strong>In the resulting document, the comments, processing instructions and entities
    * are removed.</strong>
-   * @param dbbuilderItem 
-   * @param tagsToMerge 
+   * @param dbbuilderItem
+   * @param tagsToMerge
    * @param blocks_to_merge
-   * @throws Exception 
+   * @throws Exception
    * @roseuid 3AAF3793006E
    */
-  public void mergeWith(DBBuilderItem dbbuilderItem, String[] tagsToMerge, 
+  public void mergeWith(DBBuilderItem dbbuilderItem, String[] tagsToMerge,
       VersionTag[] blocks_to_merge) throws Exception {
     /** merges the elements in the resulting document */
     Element root = getDocument().getRootElement();
