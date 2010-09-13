@@ -9,15 +9,15 @@
 
 
   <scm>
-    <connection>scm:svn:https://www.silverpeas.org/svn/silverpeas/services/db-builder/trunk</connection>
-    <developerConnection>scm:svn:https://www.silverpeas.org/svn/silverpeas/services/db-builder/trunk</developerConnection>
-    <url>https://www.silverpeas.org/svn/silverpeas/services/db-builder/trunk</url>
+    <connection>scm:svn:https://www.silverpeas.org/svn/silverpeas/services/db-builder/tags/dbbuilder-1.4</connection>
+    <developerConnection>scm:svn:https://www.silverpeas.org/svn/silverpeas/services/db-builder/tags/dbbuilder-1.4</developerConnection>
+    <url>https://www.silverpeas.org/svn/silverpeas/services/db-builder/tags/dbbuilder-1.4</url>
   </scm>
 
   <groupId>com.silverpeas.builder</groupId>
   <artifactId>dbbuilder</artifactId>
   <packaging>jar</packaging>
-  <version>1.4-SNAPSHOT</version>
+  <version>1.4</version>
   <name>db-builder</name>
 
   <dependencies>
