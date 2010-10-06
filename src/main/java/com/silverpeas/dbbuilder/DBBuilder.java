@@ -62,6 +62,7 @@ import com.silverpeas.dbbuilder.sql.RemoveSQLInstruction;
 import com.silverpeas.dbbuilder.sql.SQLInstruction;
 import com.silverpeas.dbbuilder.sql.UninstallSQLInstruction;
 import com.silverpeas.dbbuilder.util.CommandLineParameters;
+import com.silverpeas.dbbuilder.util.DatabaseType;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -158,7 +159,7 @@ public class DBBuilder {
       // Lecture des paramètres d'entrée
       params = new CommandLineParameters(args);
 
-      if (params.isSimulate() && "oracle".equalsIgnoreCase(params.getDbType())) {
+      if (params.isSimulate() && DatabaseType.ORACLE == params.getDbType()) {
         throw new Exception("Simulate mode is not allowed for Oracle target databases.");
       }
 
@@ -181,7 +182,7 @@ public class DBBuilder {
         // initialisation d'un vecteur des instructions SQL à passer en fin d'upgrade
         // pour mettre à niveau les versions de modules en base
         MetaInstructions sqlMetaInstructions = new MetaInstructions();
-        File dirXml = new File(getDBContributionDir());
+        File dirXml = new File(params.getDbType().getDBContributionDir());
         DBXmlDocument destXml = new DBXmlDocument(dirXml, MASTER_DBCONTRIBUTION_FILE);
         if (!destXml.getPath().exists()) {
           destXml.getPath().createNewFile();
@@ -298,8 +299,7 @@ public class DBBuilder {
           if (!packagesIntoFile.containsKey(p)) {
             // Package en base et non en contribution -> candidat à desinstallation
             if (DBBUILDER_MODULE.equalsIgnoreCase(p)) // le module a desinstaller est dbbuilder, on
-            // le
-            // garde sous le coude pour le traiter en dernier
+            // le garde sous le coude pour le traiter en dernier
             {
               foundDBBuilder = true;
             } else if (ACTION_ENFORCE_UNINSTALL == params.getAction()) {
@@ -477,10 +477,6 @@ public class DBBuilder {
   // ---------------------------------------------------------------------
   public static Properties getdbBuilderResources() {
     return dbBuilderResources;
-  }
-
-  public static String getDBContributionDir() {
-    return Configuration.getContributionFilesDir() + File.separatorChar + params.getDbType();
   }
 
   private static void mergeActionsToDo(DBBuilderItem pdbbuilderItem, DBXmlDocument xmlFile,

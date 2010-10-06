@@ -25,6 +25,7 @@
 package com.silverpeas.dbbuilder.util;
 
 import com.silverpeas.dbbuilder.DBBuilder;
+import java.util.Locale;
 import static com.silverpeas.dbbuilder.util.Action.*;
 
 /**
@@ -36,10 +37,10 @@ public class CommandLineParameters {
   private static final String USAGE =
       "DBBuilder usage: DBBuilder <action> -T <Targeted DB Server type> [-v(erbose)] [-s(imulate)]\n"
           + "where <action> == -C(onnection only) | -I(nstall only) | -U(ninstall only) | -O(ptimize only) | -A(ll) | -S(tatus) | -FU(Force Uninstall) <module> \n "
-          + "      <Targeted DB Server type> == MSSQL | ORACLE | POSTGRES\n";
+          + "      <Targeted DB Server type> == MSSQL | ORACLE | POSTGRES | H2\n";
 
   private Action action = null;
-  private String dbType = null;
+  private DatabaseType dbType = null;
   private boolean verbose = false;
   private boolean simulate = false;
   private String moduleName = null;
@@ -58,7 +59,7 @@ public class CommandLineParameters {
   /**
    * @return the dbType
    */
-  public String getDbType() {
+  public DatabaseType getDbType() {
     return dbType;
   }
 
@@ -113,13 +114,13 @@ public class CommandLineParameters {
         if (ACTION_ENFORCE_UNINSTALL == action) {
           getModuleName = true;
         }
-      } else if (curArg.equals("-v")) {
+      } else if ("-v".equals(curArg)) {
         if (getDBType || getModuleName) {
           DBBuilder.printError(USAGE);
           throw new Exception();
         }
         verbose = true;
-      } else if (curArg.equals("-s")) {
+      } else if ("-s".equals(curArg)) {
         if (getDBType || getModuleName) {
           DBBuilder.printError(USAGE);
           throw new Exception();
@@ -131,7 +132,7 @@ public class CommandLineParameters {
           throw new Exception();
         }
         if (getDBType) {
-          dbType = curArg.toLowerCase();
+          dbType = DatabaseType.valueOf(curArg.toUpperCase(Locale.FRENCH));
         } else if (getModuleName) {
           moduleName = curArg;
         }
