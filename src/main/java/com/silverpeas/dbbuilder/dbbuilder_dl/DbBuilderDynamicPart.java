@@ -42,23 +42,26 @@ public abstract class DbBuilderDynamicPart {
   }
 
   public void setSILVERPEAS_HOME(String sh) throws Exception {
-    if (SILVERPEAS_HOME != null)
+    if (SILVERPEAS_HOME != null) {
       throw new Exception(
           "DbBuilderDynamicPart.setSILVERPEAS_HOME() fatal error : SILVERPEAS_HOME is already set.");
+    }
     SILVERPEAS_HOME = sh;
   }
 
   public void setSILVERPEAS_DATA(String sh) throws Exception {
-    if (SILVERPEAS_DATA != null)
+    if (SILVERPEAS_DATA != null) {
       throw new Exception(
           "DbBuilderDynamicPart.setSILVERPEAS_DATA() fatal error : SILVERPEAS_DATA is already set.");
+    }
     SILVERPEAS_DATA = sh;
   }
 
   public void setConnection(Connection con) throws Exception {
-    if (this.con != null)
+    if (this.con != null) {
       throw new Exception(
           "DbBuilderDynamicPart.setConnection() fatal error : Connection is already set.");
+    }
     this.con = con;
   }
 

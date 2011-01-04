@@ -41,7 +41,7 @@ public class ConnectionFactory {
   private ConnectionFactory() {
   }
 
-  public static final ConnectionFactory getInstance() {
+  public static ConnectionFactory getInstance() {
     synchronized (ConnectionFactory.class) {
       if (instance == null) {
         instance = new ConnectionFactory();
@@ -58,7 +58,7 @@ public class ConnectionFactory {
   }
 
   public static Connection getConnection() throws SQLException {
-    return instance.datasource.getConnection();
+    return getInstance().datasource.getConnection();
   }
 
   public static String getConnectionInfo() throws SQLException {

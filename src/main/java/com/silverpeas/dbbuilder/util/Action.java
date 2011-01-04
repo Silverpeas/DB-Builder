@@ -25,7 +25,7 @@
 package com.silverpeas.dbbuilder.util;
 
 /**
- * All tha avialable acions for the DBBuilder.
+ * All tha available acions for the DBBuilder.
  * @author ehugonnet
  */
 public enum Action {

@@ -5,7 +5,6 @@
 
 package com.silverpeas.dbbuilder.util;
 
-import com.silverpeas.dbbuilder.util.Configuration;
 import java.io.File;
 
 /**

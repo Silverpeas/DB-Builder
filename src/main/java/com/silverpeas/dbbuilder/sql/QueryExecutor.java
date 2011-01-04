@@ -22,10 +22,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.silverpeas.dbbuilder.sql;
 
 import java.sql.CallableStatement;
@@ -147,5 +143,8 @@ public class QueryExecutor {
       pstmt.close();
     }
     return array;
+  }
+
+  private QueryExecutor() {
   }
 }

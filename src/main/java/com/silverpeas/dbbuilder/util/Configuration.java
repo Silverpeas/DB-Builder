@@ -22,10 +22,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.silverpeas.dbbuilder.util;
 
 import java.io.File;
@@ -61,6 +57,7 @@ public class Configuration {
    * Load a properties file from the classpath then from $SILVERPEAS_HOME/properties
    * @param propertyName
    * @return a java.util.Properties
+   * @throws IOException  
    */
   public static Properties loadResource(String propertyName) throws IOException {
     Properties properties = new Properties();
@@ -128,5 +125,8 @@ public class Configuration {
 
   public static String getLogDir() {
     return getHome() + File.separator + LOG_FILES_SUBDIR;
+  }
+
+  private Configuration() {
   }
 }
