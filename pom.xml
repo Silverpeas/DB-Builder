@@ -8,9 +8,9 @@
   </parent>
 
   <scm>
-    <connection>scm:svn:https://www.silverpeas.org/svn/silverpeas/services/db-builder/trunk</connection>
-    <developerConnection>scm:svn:https://www.silverpeas.org/svn/silverpeas/services/db-builder/trunk</developerConnection>
-    <url>https://www.silverpeas.org/svn/silverpeas/services/db-builder/trunk</url>
+    <connection>scm:git:git@github.com:Silverpeas/DB-Builder.git</connection>
+    <developerConnection>scm:git:git@github.com:Silverpeas/DB-Builder.git</developerConnection>
+    <url>https://github.com/Silverpeas/DB-Builder</url>
   </scm>
   
   <repositories>
