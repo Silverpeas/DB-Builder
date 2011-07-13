@@ -27,7 +27,6 @@ package com.silverpeas.dbbuilder_ep;
 // import obligatoire pour la superclasse
 import com.silverpeas.dbbuilder.dbbuilder_dl.DbBuilderDynamicPart;
 import com.silverpeas.dbbuilder.util.Configuration;
-import java.io.File;
 
 import java.sql.Connection;
 import java.sql.ResultSet;

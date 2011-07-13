@@ -21,7 +21,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package com.silverpeas.dbbuilder.util;
 
 import com.silverpeas.dbbuilder.DBBuilder;
@@ -48,10 +47,10 @@ public class DynamicLoader {
 
   public DynamicLoader() {
     File jarDirectory = new File(Configuration.getPiecesFilesDir(), JAR_DIRECTORY);
-    URL[] classpath = new URL[] {};
+    URL[] classpath = new URL[]{};
     if (jarDirectory.exists() && jarDirectory.isDirectory()) {
       @SuppressWarnings("unchecked")
-      Collection<File> jars = FileUtils.listFiles(jarDirectory, new String[] { "jar" }, true);
+      Collection<File> jars = FileUtils.listFiles(jarDirectory, new String[]{"jar"}, true);
       List<URL> urls = new ArrayList<URL>(jars.size());
       DBBuilder.displayMessage("We have found " + jars.size() + " jars files");
       for (File jar : jars) {
@@ -74,10 +73,9 @@ public class DynamicLoader {
   }
 
   public DbBuilderDynamicPart loadDynamicPart(String className) throws InstantiationException,
-      IllegalAccessException, ClassNotFoundException {
+          IllegalAccessException, ClassNotFoundException {
     @SuppressWarnings("unchecked")
-    Class<DbBuilderDynamicPart> dynamicPart =
-        (Class<DbBuilderDynamicPart>) Class.forName(className,
+    Class<DbBuilderDynamicPart> dynamicPart = (Class<DbBuilderDynamicPart>) Class.forName(className,
             true, loader);
     return dynamicPart.newInstance();
   }
