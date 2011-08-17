@@ -36,7 +36,7 @@ public class ReplyContent {
 
   public ReplyContent(int id, String instanceId, String content) {
     if (content != null) {
-      this.content = content;
+      this.content = content.replace("\r\n", "<br/>").replace("\n", "<br/>");
     } else {
       this.content = "";
     }
