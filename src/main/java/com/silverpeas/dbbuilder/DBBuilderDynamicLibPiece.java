@@ -78,6 +78,7 @@ public class DBBuilderDynamicLibPiece extends DBBuilderPiece {
     } // try
     dynamicPart.setSILVERPEAS_HOME(Configuration.getHome());
     dynamicPart.setSILVERPEAS_DATA(Configuration.getData());
+    dynamicPart.setConsole(getConsole());
     setInstructions();
   }
 

@@ -24,6 +24,7 @@
 
 package com.silverpeas.dbbuilder.dbbuilder_dl;
 
+import com.silverpeas.dbbuilder.Console;
 import java.sql.Connection;
 
 /**
@@ -36,6 +37,7 @@ public abstract class DbBuilderDynamicPart {
 
   private String SILVERPEAS_HOME = null;
   private String SILVERPEAS_DATA = null;
+  private Console console;
   private Connection con = null;
 
   public DbBuilderDynamicPart() {
@@ -64,6 +66,10 @@ public abstract class DbBuilderDynamicPart {
     }
     this.con = con;
   }
+  
+  public void setConsole(final Console console) {
+    this.console = console;
+  }
 
   public String getSILVERPEAS_HOME() {
     return SILVERPEAS_HOME;
@@ -75,5 +81,9 @@ public abstract class DbBuilderDynamicPart {
 
   public Connection getConnection() {
     return con;
+  }
+  
+  public Console getConsole() {
+    return console;
   }
 }

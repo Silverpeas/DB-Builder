@@ -52,7 +52,7 @@ public class DynamicLoader {
       @SuppressWarnings("unchecked")
       Collection<File> jars = FileUtils.listFiles(jarDirectory, new String[]{"jar"}, true);
       List<URL> urls = new ArrayList<URL>(jars.size());
-      DBBuilder.displayMessage("We have found " + jars.size() + " jars files");
+      DBBuilder.printMessage("We have found " + jars.size() + " jars files");
       for (File jar : jars) {
         try {
           urls.add(jar.toURI().toURL());
