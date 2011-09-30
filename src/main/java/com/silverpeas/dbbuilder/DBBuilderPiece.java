@@ -58,6 +58,7 @@ public abstract class DBBuilderPiece {
   // contenu interprété en séquence d'instructions
   protected Instruction[] instructions = null;
   protected Connection connection = null;
+  protected Console console = null;
 
   // Contructeur utilisé pour une pièce de type fichier
   public DBBuilderPiece(String pieceName, String actionName, boolean traceMode)
@@ -75,7 +76,7 @@ public abstract class DBBuilderPiece {
       // charge son contenu sauf pour un jar qui doit être dans le classpath
       File myFile = new File(pieceName);
       if (!myFile.exists() || !myFile.isFile() || !myFile.canRead()) {
-        DBBuilder.displayMessageln(DBBuilder.NEW_LINE + "\t\t***Unable to load : " + pieceName);
+        DBBuilder.printMessageln(Console.NEW_LINE + "\t\t***Unable to load : " + pieceName);
         throw new Exception("Unable to find or load : " + pieceName);
       }
       int fileSize = (int) myFile.length();
@@ -141,6 +142,14 @@ public abstract class DBBuilderPiece {
   public String getContent() {
     // retourne le contenu chargé
     return content;
+  }
+  
+  public void setConsole(final Console console) {
+    this.console = console;
+  }
+  
+  public Console getConsole() {
+    return this.console;
   }
 
   /*
@@ -238,7 +247,7 @@ public abstract class DBBuilderPiece {
       if (printableInstruction.length() > 147) {
         printableInstruction = printableInstruction.substring(0, 146) + "...";
       }
-      DBBuilder.displayMessageln("\t\t>" + printableInstruction);
+      DBBuilder.printMessageln("\t\t>" + printableInstruction);
     }
     try {
       java.sql.Statement stmt = connection.createStatement();
@@ -260,7 +269,7 @@ public abstract class DBBuilderPiece {
       if (printableInstruction.length() > 147) {
         printableInstruction = printableInstruction.substring(0, 146) + "...";
       }
-      DBBuilder.displayMessageln("\t\t>" + printableInstruction);
+      DBBuilder.printMessageln("\t\t>" + printableInstruction);
     }
     try {
       QueryExecutor.executeProcedure(connection, currentInstruction, params);
@@ -274,7 +283,7 @@ public abstract class DBBuilderPiece {
   public void executeJavaInvoke(String currentInstruction, Object myClass)
       throws Exception {
     if (traceMode) {
-      DBBuilder.displayMessageln("\t\t>" + myClass.getClass().getName() + "."
+      DBBuilder.printMessageln("\t\t>" + myClass.getClass().getName() + "."
           + currentInstruction + "()");
     }
     ((DbBuilderDynamicPart) myClass).setConnection(connection);
