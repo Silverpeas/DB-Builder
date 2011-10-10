@@ -33,7 +33,7 @@ import javax.sql.DataSource;
 import org.dbunit.dataset.IDataSet;
 import org.dbunit.DataSourceDatabaseTester;
 import org.dbunit.IDatabaseTester;
-import org.dbunit.dataset.xml.FlatXmlDataSetBuilder;
+import org.dbunit.dataset.xml.FlatXmlDataSet;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -101,11 +101,11 @@ public class DuplicatedContentRemovingTest {
   }
 
   protected IDataSet getDataSet() throws Exception {
-    return new FlatXmlDataSetBuilder().build(getClass().getResourceAsStream("pdc-dataset.xml"));
+    return new FlatXmlDataSet(getClass().getResourceAsStream("pdc-dataset.xml"));
   }
   
   protected IDataSet getExpectedDataSet() throws Exception {
-    return new FlatXmlDataSetBuilder().build(getClass().getResourceAsStream("expected-pdc-dataset.xml"));
+    return new FlatXmlDataSet(getClass().getResourceAsStream("expected-pdc-dataset.xml"));
   }
   
   protected ITable getActualTable(String tableName) throws Exception {
