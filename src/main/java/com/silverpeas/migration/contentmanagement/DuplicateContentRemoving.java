@@ -41,7 +41,9 @@ import java.sql.Statement;
 public class DuplicateContentRemoving extends DbBuilderDynamicPart {
 
   /**
-   * SQL statement for querying the count of duplicated contents that aren't classified on the PdC.
+   * SQL statement for querying the count of duplicated contents that are classified on the PdC.
+   * Among the classified contents, one or more redundant instances of theses contents can be not
+   * classified on the PdC.
    * The Silverpeas contents are persisted into the sb_contentmanager_content table.
    * A content belongs to a Silverpeas component instance that is refered by the column 
    * contentInstanceId in the sb_contentmanager_content table.
@@ -49,22 +51,24 @@ public class DuplicateContentRemoving extends DbBuilderDynamicPart {
    * table.
    */
   private static final String DUPLICATE_CLASSIFIED_CONTENT_COUNT_QUERY =
-          "select count(c1.internalContentId) from sb_contentmanager_content as c1 where "
+          "select count(distinct c1.internalContentId) from sb_contentmanager_content as c1 where "
           + "1 < (select count(c2.internalContentId) from sb_contentmanager_content as c2 where "
           + "c2.contentInstanceId=c1.contentInstanceId and c2.internalContentId = c1.internalContentId) "
           + "and c1.silverContentId in (select objectid from sb_classifyengine_classify)";
   /**
-   * SQL statement for querying the count of all duplicated contents.
+   * SQL statement for querying the count of all duplicated contents. A content can be made up of two
+   * or more redundant instances.
    * The Silverpeas contents are persisted into the sb_contentmanager_content table.
    * A content belongs to a Silverpeas component instance that is refered by the column 
    * contentInstanceId in the sb_contentmanager_content table.
    */
   private static final String DUPLICATE_CONTENT_COUNT_QUERY =
-          "select count(c1.silverContentId) / 2 from sb_contentmanager_content as c1 where "
+          "select count(distinct c1.internalContentId) from sb_contentmanager_content as c1 where "
           + "1 < (select count(c2.internalContentId) from sb_contentmanager_content as c2 where "
           + "c2.contentInstanceId=c1.contentInstanceId and c2.internalContentId = c1.internalContentId) ";
   /**
-   * SQL statement for querying the redundant instances of duplicated contents.
+   * SQL statement for querying the redundant instances of duplicated contents. A content can be
+   * made up of two or more redundant instances.
    * The Silverpeas contents are persisted into the sb_contentmanager_content table.
    * A content belongs to a Silverpeas component instance that is refered by the column 
    * contentInstanceId in the sb_contentmanager_content table.
@@ -75,24 +79,26 @@ public class DuplicateContentRemoving extends DbBuilderDynamicPart {
           "select c1.silverContentId, c1.internalContentId, c1.contentInstanceId from sb_contentmanager_content as c1 where "
           + "1 < (select count(c2.internalContentId) from sb_contentmanager_content as c2 where "
           + "c2.contentInstanceId=c1.contentInstanceId and c2.internalContentId = c1.internalContentId) "
-          + "and c1.silverContentId < (select c3.silverContentId from sb_contentmanager_content as c3 where C1.contentInstanceId=c3.contentInstanceId and c1.internalContentId=c3.internalContentId and c1.silverContentId != c3.silverContentId)";
+          + "and c1.silverContentId < (select max(c3.silverContentId) from sb_contentmanager_content as c3 where c1.contentInstanceId=c3.contentInstanceId and c1.internalContentId=c3.internalContentId and c1.silverContentId != c3.silverContentId)";
   /**
-   * SQL statement for deleting in the sb_contentmanager_content table the redundant instances
-   * of duplicate content that aren't classificed on the PdC. The redundant unclassified 
-   * instance of the classified contents are also deleted by this statement.
+   * SQL statement for deleting in the sb_contentmanager_content table all the unclassified redundant
+   * instances of duplicate contents. Theses contents can have one instance that is classified on the
+   * PdC; theses aren't deleted. Only the instance of duplicate content with the higher silver content
+   * identifier (thus the more recent silver object registered) are kept as the single valid content
+   * instance.
    */
-  private static final String DELETION_OF_REDUNDANT_INSTANCES_OF_DUPLICATE_UNCLASSIFIED_CONTENT =
+  private static final String UNCLASSIFIED_REDUNDANT_CONTENT_INSTANCE_DELETION =
           "delete from "
           + "sb_contentmanager_content as c1 where "
           + "1 < (select count(c2.internalContentId) from sb_contentmanager_content as c2 where c2.contentInstanceId=c1.contentInstanceId and c2.internalContentId = c1.internalContentId) "
           + "and c1.silverContentId not in (select objectid from sb_classifyengine_classify)"
-          + "and c1.silverContentId < (select c3.silverContentId from sb_contentmanager_content as c3 where C1.contentInstanceId=c3.contentInstanceId and c1.internalContentId=c3.internalContentId and c1.silverContentId != c3.silverContentId)";
+          + "and c1.silverContentId < (select max(c3.silverContentId) from sb_contentmanager_content as c3 where c1.contentInstanceId=c3.contentInstanceId and c1.internalContentId=c3.internalContentId)";
   /**
-   * SQL statement for deleting in the sb_contentmanager_content table all the redundant and
-   * unclassified instances of the duplicate contents. In usual cases, they are deleted by the 
-   * above statement; this one is just for ensuring their deletion.
+   * SQL statement for deleting in the sb_contentmanager_content table the unclassified redundant
+   * instances of the duplicate contents that were not taken into account by the previous request.
+   * Theses one are classified redundant instances with a lower silver content identifier.
    */
-  private static final String DELETION_OF_UNCLASSIFIED_INSTANCES_OF_DUPLICATE_CONTENT = "delete from "
+  private static final String UNCLASSIFIED_REDUNDANT_CONTENT_INSTANCE_WITH_HIGHER_ID_DELETION = "delete from "
           + "sb_contentmanager_content as c1 where "
           + "1 < (select count(c2.internalContentId) from sb_contentmanager_content as c2 where c2.contentInstanceId=c1.contentInstanceId and c2.internalContentId = c1.internalContentId) "
           + "and c1.silverContentId not in (select objectid from sb_classifyengine_classify)";
@@ -102,7 +108,7 @@ public class DuplicateContentRemoving extends DbBuilderDynamicPart {
    * content are classified; in this case, the redundant instance isn't deleted by the
    * above statement and it is then necessary to delete it explicitly.
    */
-  private static final String DELETION_OF_A_GIVEN_CONTENT_INSTANCE = "delete from "
+  private static final String CONTENT_INSTANCE_DELETION = "delete from "
           + "sb_contentmanager_content where silverContentId=";
   /**
    * SQL statement for deleting explicitly the classification of a given content in the
@@ -111,7 +117,7 @@ public class DuplicateContentRemoving extends DbBuilderDynamicPart {
    * content are classified; in this case, the redundant instance isn't deleted by the
    * above statement and it is then necessary to delete its classification before deleting it.
    */
-  private static final String DELETION_OF_CLASSIFICATION_OF_A_GIVEN_CONTENT_INSTANCE = "delete from "
+  private static final String CONTENT_INSTANCE_CLASSIFICATION_DELETION = "delete from "
           + "sb_classifyengine_classify where objectId=";
 
   /**
@@ -136,26 +142,26 @@ public class DuplicateContentRemoving extends DbBuilderDynamicPart {
     System.out.println(duplicateContents);
 
     int classifiedContents = executeQuery(DUPLICATE_CLASSIFIED_CONTENT_COUNT_QUERY);
-    console.printMessageln("Number of duplicate content that are classified: " + classifiedContents);
+    console.printMessageln("Number of duplicate content that are classified on the PdC: " + classifiedContents);
 
     console.printMessageln(
-            "Delete the redundant instances of contents that aren't classified on the PdC");
+            "Delete the unclassified redundant instances of duplicate contents");
     int deletedContents1 = executeDeletion(
-            DELETION_OF_REDUNDANT_INSTANCES_OF_DUPLICATE_UNCLASSIFIED_CONTENT);
+            UNCLASSIFIED_REDUNDANT_CONTENT_INSTANCE_DELETION);
     console.printMessageln("-> number of redundant instances deleted: " + deletedContents1);
 
     console.printMessageln(
-            "Delete all the unclassified redundant instances of the contents that are classified on the PdC");
+            "Delete the rest of unclassified redundant instances of duplicate contents");
     int deletedContents2 =
-            executeDeletion(DELETION_OF_UNCLASSIFIED_INSTANCES_OF_DUPLICATE_CONTENT);
+            executeDeletion(UNCLASSIFIED_REDUNDANT_CONTENT_INSTANCE_WITH_HIGHER_ID_DELETION);
     console.printMessageln("-> number of redundant instances deleted: " + deletedContents2);
 
     console.printMessageln(
-            "Delete all the redundant instance of the content for which all the instances are exceptionally classified on the PdC");
+            "Delete the exceptional redundant instances of duplicate classified content");
     int deletedContents3 = deleteRedundantClassifiedInstances();
     console.printMessageln("-> number of redundant instances deleted: " + deletedContents3);
 
-    String deletedContents = "Number of cleaned up contents: " + (deletedContents1 + deletedContents2
+    String deletedContents = "Total number of deleted redundant instances: " + (deletedContents1 + deletedContents2
             + deletedContents3);
     console.printMessageln(deletedContents);
     System.out.println();
@@ -188,9 +194,9 @@ public class DuplicateContentRemoving extends DbBuilderDynamicPart {
     // for each of the retrieved result.
     while (rs.next()) {
       int silverContentId = rs.getInt("silverContentId");
-      deletedCount += executeDeletion(DELETION_OF_CLASSIFICATION_OF_A_GIVEN_CONTENT_INSTANCE
+      deletedCount += executeDeletion(CONTENT_INSTANCE_CLASSIFICATION_DELETION
               + silverContentId);
-      executeDeletion(DELETION_OF_A_GIVEN_CONTENT_INSTANCE + silverContentId);
+      executeDeletion(CONTENT_INSTANCE_DELETION + silverContentId);
     }
     return deletedCount;
   }
