@@ -51,8 +51,8 @@ public class DuplicateContentRemoving extends DbBuilderDynamicPart {
    * table.
    */
   private static final String DUPLICATE_CLASSIFIED_CONTENT_COUNT_QUERY =
-          "select count(distinct c1.internalContentId) from sb_contentmanager_content as c1 where "
-          + "1 < (select count(c2.internalContentId) from sb_contentmanager_content as c2 where "
+          "select count(distinct c1.internalContentId) from sb_contentmanager_content c1 where "
+          + "1 < (select count(c2.internalContentId) from sb_contentmanager_content c2 where "
           + "c2.contentInstanceId=c1.contentInstanceId and c2.internalContentId = c1.internalContentId) "
           + "and c1.silverContentId in (select objectid from sb_classifyengine_classify)";
   /**
@@ -63,8 +63,8 @@ public class DuplicateContentRemoving extends DbBuilderDynamicPart {
    * contentInstanceId in the sb_contentmanager_content table.
    */
   private static final String DUPLICATE_CONTENT_COUNT_QUERY =
-          "select count(distinct c1.internalContentId) from sb_contentmanager_content as c1 where "
-          + "1 < (select count(c2.internalContentId) from sb_contentmanager_content as c2 where "
+          "select count(distinct c1.internalContentId) from sb_contentmanager_content c1 where "
+          + "1 < (select count(c2.internalContentId) from sb_contentmanager_content c2 where "
           + "c2.contentInstanceId=c1.contentInstanceId and c2.internalContentId = c1.internalContentId) ";
   /**
    * SQL statement for querying the redundant instances of duplicated contents. A content can be
@@ -76,10 +76,10 @@ public class DuplicateContentRemoving extends DbBuilderDynamicPart {
    * SQL statements.
    */
   private static final String REDUNDANT_INSTANCE_OF_DUPLICATE_CONTENT_QUERY =
-          "select c1.silverContentId, c1.internalContentId, c1.contentInstanceId from sb_contentmanager_content as c1 where "
-          + "1 < (select count(c2.internalContentId) from sb_contentmanager_content as c2 where "
+          "select c1.silverContentId, c1.internalContentId, c1.contentInstanceId from sb_contentmanager_content c1 where "
+          + "1 < (select count(c2.internalContentId) from sb_contentmanager_content c2 where "
           + "c2.contentInstanceId=c1.contentInstanceId and c2.internalContentId = c1.internalContentId) "
-          + "and c1.silverContentId < (select max(c3.silverContentId) from sb_contentmanager_content as c3 where c1.contentInstanceId=c3.contentInstanceId and c1.internalContentId=c3.internalContentId and c1.silverContentId != c3.silverContentId)";
+          + "and c1.silverContentId < (select max(c3.silverContentId) from sb_contentmanager_content c3 where c1.contentInstanceId=c3.contentInstanceId and c1.internalContentId=c3.internalContentId and c1.silverContentId != c3.silverContentId)";
   /**
    * SQL statement for deleting in the sb_contentmanager_content table all the unclassified redundant
    * instances of duplicate contents. Theses contents can have one instance that is classified on the
@@ -89,18 +89,18 @@ public class DuplicateContentRemoving extends DbBuilderDynamicPart {
    */
   private static final String UNCLASSIFIED_REDUNDANT_CONTENT_INSTANCE_DELETION =
           "delete from "
-          + "sb_contentmanager_content as c1 where "
-          + "1 < (select count(c2.internalContentId) from sb_contentmanager_content as c2 where c2.contentInstanceId=c1.contentInstanceId and c2.internalContentId = c1.internalContentId) "
+          + "sb_contentmanager_content c1 where "
+          + "1 < (select count(c2.internalContentId) from sb_contentmanager_content c2 where c2.contentInstanceId=c1.contentInstanceId and c2.internalContentId = c1.internalContentId) "
           + "and c1.silverContentId not in (select objectid from sb_classifyengine_classify)"
-          + "and c1.silverContentId < (select max(c3.silverContentId) from sb_contentmanager_content as c3 where c1.contentInstanceId=c3.contentInstanceId and c1.internalContentId=c3.internalContentId)";
+          + "and c1.silverContentId < (select max(c3.silverContentId) from sb_contentmanager_content c3 where c1.contentInstanceId=c3.contentInstanceId and c1.internalContentId=c3.internalContentId)";
   /**
    * SQL statement for deleting in the sb_contentmanager_content table the unclassified redundant
    * instances of the duplicate contents that were not taken into account by the previous request.
    * Theses one are classified redundant instances with a lower silver content identifier.
    */
   private static final String UNCLASSIFIED_REDUNDANT_CONTENT_INSTANCE_WITH_HIGHER_ID_DELETION = "delete from "
-          + "sb_contentmanager_content as c1 where "
-          + "1 < (select count(c2.internalContentId) from sb_contentmanager_content as c2 where c2.contentInstanceId=c1.contentInstanceId and c2.internalContentId = c1.internalContentId) "
+          + "sb_contentmanager_content c1 where "
+          + "1 < (select count(c2.internalContentId) from sb_contentmanager_content c2 where c2.contentInstanceId=c1.contentInstanceId and c2.internalContentId = c1.internalContentId) "
           + "and c1.silverContentId not in (select objectid from sb_classifyengine_classify)";
   /**
    * SQL statement for deleting explicitly a given content in the sb_contentmanager_content table.
