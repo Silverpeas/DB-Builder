@@ -29,6 +29,9 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * DB migration to remove any duplicate content instances in the database underlying at Silverpeas.
@@ -81,44 +84,43 @@ public class DuplicateContentRemoving extends DbBuilderDynamicPart {
           + "c2.contentInstanceId=c1.contentInstanceId and c2.internalContentId = c1.internalContentId) "
           + "and c1.silverContentId < (select max(c3.silverContentId) from sb_contentmanager_content c3 where c1.contentInstanceId=c3.contentInstanceId and c1.internalContentId=c3.internalContentId and c1.silverContentId != c3.silverContentId)";
   /**
-   * SQL statement for deleting in the sb_contentmanager_content table all the unclassified redundant
+   * SQL statement for querying in the sb_contentmanager_content table all the unclassified redundant
    * instances of duplicate contents. Theses contents can have one instance that is classified on the
-   * PdC; theses aren't deleted. Only the instance of duplicate content with the higher silver content
+   * PdC; theses aren't fetched. Only the instance of duplicate content with the higher silver content
    * identifier (thus the more recent silver object registered) are kept as the single valid content
-   * instance.
+   * instance. Theses queried contents is for their deletion.
    */
-  private static final String UNCLASSIFIED_REDUNDANT_CONTENT_INSTANCE_DELETION =
-          "delete from "
+  private static final String UNCLASSIFIED_REDUNDANT_CONTENT_INSTANCES_TO_DELETE =
+          "select c1.silverContentId from "
           + "sb_contentmanager_content c1 where "
           + "1 < (select count(c2.internalContentId) from sb_contentmanager_content c2 where c2.contentInstanceId=c1.contentInstanceId and c2.internalContentId = c1.internalContentId) "
           + "and c1.silverContentId not in (select objectid from sb_classifyengine_classify)"
           + "and c1.silverContentId < (select max(c3.silverContentId) from sb_contentmanager_content c3 where c1.contentInstanceId=c3.contentInstanceId and c1.internalContentId=c3.internalContentId)";
   /**
-   * SQL statement for deleting in the sb_contentmanager_content table the unclassified redundant
+   * SQL statement for querying in the sb_contentmanager_content table the unclassified redundant
    * instances of the duplicate contents that were not taken into account by the previous request.
    * Theses one are classified redundant instances with a lower silver content identifier.
+   *  Theses queried contents is for their deletion.
    */
-  private static final String UNCLASSIFIED_REDUNDANT_CONTENT_INSTANCE_WITH_HIGHER_ID_DELETION = "delete from "
+  private static final String UNCLASSIFIED_REDUNDANT_CONTENT_INSTANCE_WITH_HIGHER_ID_TO_DELETE = "select c1.silverContentId from "
           + "sb_contentmanager_content c1 where "
           + "1 < (select count(c2.internalContentId) from sb_contentmanager_content c2 where c2.contentInstanceId=c1.contentInstanceId and c2.internalContentId = c1.internalContentId) "
           + "and c1.silverContentId not in (select objectid from sb_classifyengine_classify)";
   /**
-   * SQL statement for deleting explicitly a given content in the sb_contentmanager_content table.
-   * This statement will be use in the exceptional case where two instances of a duplicate
-   * content are classified; in this case, the redundant instance isn't deleted by the
-   * above statement and it is then necessary to delete it explicitly.
+   * SQL statement for deleting explicitly some given contents in the sb_contentmanager_content
+   * table.
    */
   private static final String CONTENT_INSTANCE_DELETION = "delete from "
-          + "sb_contentmanager_content where silverContentId=";
+          + "sb_contentmanager_content where silverContentId in ({0})";
   /**
-   * SQL statement for deleting explicitly the classification of a given content in the
+   * SQL statement for deleting explicitly the classification of some given contents in the
    * sb_classifyengine_classify table.
    * This statement will be use in the exceptional case where two instances of a duplicate
    * content are classified; in this case, the redundant instance isn't deleted by the
    * above statement and it is then necessary to delete its classification before deleting it.
    */
   private static final String CONTENT_INSTANCE_CLASSIFICATION_DELETION = "delete from "
-          + "sb_classifyengine_classify where objectId=";
+          + "sb_classifyengine_classify where objectId in ({0})";
 
   /**
    * Migrates the sb_contentmanager_content table by removing all duplicated Silverpeas contents
@@ -135,25 +137,29 @@ public class DuplicateContentRemoving extends DbBuilderDynamicPart {
       connection.setAutoCommit(false);
     }
 
-    int duplicateContentCount = executeQuery(DUPLICATE_CONTENT_COUNT_QUERY);
+    int duplicateContentCount = executeQuery(DUPLICATE_CONTENT_COUNT_QUERY).get(0);
     String duplicateContents = "Number of duplicate content: " + duplicateContentCount;
     console.printMessageln(duplicateContents);
     System.out.println();
     System.out.println(duplicateContents);
 
-    int classifiedContents = executeQuery(DUPLICATE_CLASSIFIED_CONTENT_COUNT_QUERY);
-    console.printMessageln("Number of duplicate content that are classified on the PdC: " + classifiedContents);
+    int classifiedContents = executeQuery(DUPLICATE_CLASSIFIED_CONTENT_COUNT_QUERY).get(0);
+    console.printMessageln("Number of duplicate content that are classified on the PdC: "
+            + classifiedContents);
 
     console.printMessageln(
             "Delete the unclassified redundant instances of duplicate contents");
-    int deletedContents1 = executeDeletion(
-            UNCLASSIFIED_REDUNDANT_CONTENT_INSTANCE_DELETION);
+    List<Integer> contentsToDelete =
+            executeQuery(UNCLASSIFIED_REDUNDANT_CONTENT_INSTANCES_TO_DELETE);
+    int deletedContents1 = executeDeletion(CONTENT_INSTANCE_DELETION, contentsToDelete);
+    assertEquals(contentsToDelete.size(), deletedContents1);
     console.printMessageln("-> number of redundant instances deleted: " + deletedContents1);
 
     console.printMessageln(
             "Delete the rest of unclassified redundant instances of duplicate contents");
-    int deletedContents2 =
-            executeDeletion(UNCLASSIFIED_REDUNDANT_CONTENT_INSTANCE_WITH_HIGHER_ID_DELETION);
+    contentsToDelete = executeQuery(UNCLASSIFIED_REDUNDANT_CONTENT_INSTANCE_WITH_HIGHER_ID_TO_DELETE);
+    int deletedContents2 = executeDeletion(CONTENT_INSTANCE_DELETION, contentsToDelete);
+    assertEquals(contentsToDelete.size(), deletedContents2);
     console.printMessageln("-> number of redundant instances deleted: " + deletedContents2);
 
     console.printMessageln(
@@ -161,7 +167,8 @@ public class DuplicateContentRemoving extends DbBuilderDynamicPart {
     int deletedContents3 = deleteRedundantClassifiedInstances();
     console.printMessageln("-> number of redundant instances deleted: " + deletedContents3);
 
-    String deletedContents = "Total number of deleted redundant instances: " + (deletedContents1 + deletedContents2
+    String deletedContents = "Total number of deleted redundant instances: " + (deletedContents1
+            + deletedContents2
             + deletedContents3);
     console.printMessageln(deletedContents);
     System.out.println();
@@ -170,34 +177,60 @@ public class DuplicateContentRemoving extends DbBuilderDynamicPart {
     connection.commit();
     connection.setAutoCommit(autocommit);
   }
-  
-  private int executeQuery(String query) throws SQLException {
+
+//  private int executeQuery(String query) throws SQLException {
+//    Connection connection = getConnection();
+//    Statement statement = connection.createStatement();
+//    ResultSet resultSet = statement.executeQuery(query);
+//    resultSet.next();
+//    return resultSet.getInt(1);
+//  }
+  private List<Integer> executeQuery(String query) throws SQLException {
+    List<Integer> result = new ArrayList<Integer>();
     Connection connection = getConnection();
     Statement statement = connection.createStatement();
     ResultSet resultSet = statement.executeQuery(query);
-    resultSet.next();
-    return resultSet.getInt(1);
+    while (resultSet.next()) {
+      result.add(resultSet.getInt(1));
+    }
+    return result;
   }
-
-  private int executeDeletion(String query) throws SQLException {
+  
+  private int executeDeletion(String query, final List<Integer> objectsToDelete) throws SQLException {
+    if (objectsToDelete.isEmpty()) {
+      return 0;
+    }
     Connection connection = getConnection();
     Statement statement = connection.createStatement();
-    return statement.executeUpdate(query);
+    StringBuilder parameterBuilder = new StringBuilder();
+    for (Integer anObjectToDelete : objectsToDelete) {
+      parameterBuilder.append(anObjectToDelete).append(',');
+    }
+    String sqlRequest = MessageFormat.format(query, parameterBuilder.toString().substring(0,
+            parameterBuilder.length() - 1));
+    return statement.executeUpdate(sqlRequest);
   }
 
   private int deleteRedundantClassifiedInstances() throws SQLException {
-    int deletedCount = 0;
     Connection connection = getConnection();
     Statement statement = connection.createStatement();
     ResultSet rs = statement.executeQuery(REDUNDANT_INSTANCE_OF_DUPLICATE_CONTENT_QUERY);
     // As it should have only a few (or no) results from the query above, we can execute the deletion
     // for each of the retrieved result.
+    List<Integer> contentsToDelete = new ArrayList<Integer>();
     while (rs.next()) {
       int silverContentId = rs.getInt("silverContentId");
-      deletedCount += executeDeletion(CONTENT_INSTANCE_CLASSIFICATION_DELETION
-              + silverContentId);
-      executeDeletion(CONTENT_INSTANCE_DELETION + silverContentId);
+      contentsToDelete.add(silverContentId);
     }
+    int deletedCount = executeDeletion(CONTENT_INSTANCE_CLASSIFICATION_DELETION, contentsToDelete);
+    assertEquals(contentsToDelete.size(), deletedCount);
+    executeDeletion(CONTENT_INSTANCE_DELETION, contentsToDelete);
     return deletedCount;
+  }
+  
+  private static void assertEquals(int expected, int actual) {
+    if (expected != actual) {
+      throw new AssertionError("Expected deletion: " + expected + ", actual deletion: " + actual);
+    }
   }
 }
