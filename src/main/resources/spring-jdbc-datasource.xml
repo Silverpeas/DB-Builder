@@ -29,7 +29,7 @@
   xsi:schemaLocation="
        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-   <bean id="connectionFactory" name="connectionFactory" class="com.silverpeas.dbbuilder.sql.ConnectionFactory"
+   <bean id="connectionFactory" name="connectionFactory" class="org.silverpeas.dbbuilder.sql.ConnectionFactory"
       factory-method="getInstance">
         <property name="datasource" ref="datasource" />
     </bean>

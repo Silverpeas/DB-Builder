@@ -23,8 +23,8 @@
  */
 package com.silverpeas.migration.contentmanagement;
 
-import com.silverpeas.dbbuilder.Console;
-import com.silverpeas.dbbuilder.sql.ConnectionFactory;
+import org.silverpeas.dbbuilder.Console;
+import org.silverpeas.dbbuilder.sql.ConnectionFactory;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;

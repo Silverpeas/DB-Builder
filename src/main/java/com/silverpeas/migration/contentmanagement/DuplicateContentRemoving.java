@@ -23,8 +23,8 @@
  */
 package com.silverpeas.migration.contentmanagement;
 
-import com.silverpeas.dbbuilder.Console;
-import com.silverpeas.dbbuilder.dbbuilder_dl.DbBuilderDynamicPart;
+import org.silverpeas.dbbuilder.Console;
+import org.silverpeas.dbbuilder.dbbuilder_dl.DbBuilderDynamicPart;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;

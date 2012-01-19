@@ -24,8 +24,8 @@
  */
 package com.silverpeas.migration.questionreply;
 
-import com.silverpeas.dbbuilder.dbbuilder_dl.DbBuilderDynamicPart;
-import com.silverpeas.dbbuilder.util.Configuration;
+import org.silverpeas.dbbuilder.dbbuilder_dl.DbBuilderDynamicPart;
+import org.silverpeas.dbbuilder.util.Configuration;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
