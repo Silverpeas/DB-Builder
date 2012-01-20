@@ -41,15 +41,14 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
 /**
- *
  * @author ehugonnet
  */
 public class ReplyContentToWysiwygMigration extends DbBuilderDynamicPart {
 
   public static final String QUERY = "SELECT sc_questionreply_question.instanceid AS instanceid, "
-          + "sc_questionreply_reply.id AS id, sc_questionreply_reply.content AS content FROM "
-          + "sc_questionreply_question, sc_questionreply_reply WHERE "
-          + "sc_questionreply_question.id = sc_questionreply_reply.questionid";
+      + "sc_questionreply_reply.id AS id, sc_questionreply_reply.content AS content FROM "
+      + "sc_questionreply_question, sc_questionreply_reply WHERE "
+      + "sc_questionreply_question.id = sc_questionreply_reply.questionid";
 
   public ReplyContentToWysiwygMigration() {
   }
@@ -74,7 +73,7 @@ public class ReplyContentToWysiwygMigration extends DbBuilderDynamicPart {
       rs = stmt.executeQuery(QUERY);
       while (rs.next()) {
         result.add(new ReplyContent(rs.getInt("id"), rs.getString("instanceid"), rs.getString(
-                "content")));
+            "content")));
       }
       return result;
     } catch (SQLException ex) {
@@ -90,16 +89,16 @@ public class ReplyContentToWysiwygMigration extends DbBuilderDynamicPart {
   }
 
   void migrate(ReplyContent content, String upLoadPath) {
-    File targetDir = new File(upLoadPath + File.separatorChar + content.getInstanceId() 
-            + File.separatorChar + "Attachment" + File.separatorChar + "wysiwyg" 
-            + File.separatorChar );
+    File targetDir = new File(upLoadPath + File.separatorChar + content.getInstanceId()
+        + File.separatorChar + "Attachment" + File.separatorChar + "wysiwyg"
+        + File.separatorChar);
     InputStream in = null;
     try {
       targetDir.mkdirs();
       in = new ByteArrayInputStream(content.getContent().getBytes("UTF-8"));
       FileUtils.copyInputStreamToFile(in, new File(targetDir, content.getId() + "wysiwyg.txt"));
-    }catch(IOException ioex){
-      if(in != null) {
+    } catch (IOException ioex) {
+      if (in != null) {
         IOUtils.closeQuietly(in);
       }
     }

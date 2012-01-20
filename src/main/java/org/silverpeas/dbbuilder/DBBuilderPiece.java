@@ -143,11 +143,11 @@ public abstract class DBBuilderPiece {
     // retourne le contenu chargé
     return content;
   }
-  
+
   public void setConsole(final Console console) {
     this.console = console;
   }
-  
+
   public Console getConsole() {
     return this.console;
   }

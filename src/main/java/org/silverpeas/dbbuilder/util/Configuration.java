@@ -57,7 +57,7 @@ public class Configuration {
    * Load a properties file from the classpath then from $SILVERPEAS_HOME/properties
    * @param propertyName
    * @return a java.util.Properties
-   * @throws IOException  
+   * @throws IOException
    */
   public static Properties loadResource(String propertyName) throws IOException {
     Properties properties = new Properties();

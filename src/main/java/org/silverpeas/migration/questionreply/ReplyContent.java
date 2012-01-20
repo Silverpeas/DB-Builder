@@ -25,7 +25,6 @@
 package org.silverpeas.migration.questionreply;
 
 /**
- *
  * @author ehugonnet
  */
 public class ReplyContent {
@@ -46,7 +45,6 @@ public class ReplyContent {
 
   /**
    * Get the value of id
-   *
    * @return the value of id
    */
   public int getId() {
@@ -55,7 +53,6 @@ public class ReplyContent {
 
   /**
    * Get the value of instanceId
-   *
    * @return the value of instanceId
    */
   public String getInstanceId() {
@@ -64,7 +61,6 @@ public class ReplyContent {
 
   /**
    * Get the value of content
-   *
    * @return the value of content
    */
   public String getContent() {

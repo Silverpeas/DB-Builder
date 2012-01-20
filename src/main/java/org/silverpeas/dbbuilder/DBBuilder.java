@@ -86,7 +86,7 @@ public class DBBuilder {
   public static final String DBBuilderAppVersion = "V5";
   // Fichier log
   protected static Console log;
-  
+
   static public final String CREATE_TABLE_TAG = "create_table";
   static public final String CREATE_INDEX_TAG = "create_index";
   static public final String CREATE_CONSTRAINT_TAG = "create_constraint";
@@ -816,16 +816,16 @@ public class DBBuilder {
                 // piece de type Single Statement
                 pU =
                     new DBBuilderSingleStatementPiece(Configuration.getPiecesFilesDir() +
-                        File.separatorChar
-                        + nameU, tagsToProcessU[i], params.isVerbose());
+                    File.separatorChar
+                    + nameU, tagsToProcessU[i], params.isVerbose());
                 pU.cacheIntoDB(connection, pName, iFile);
               } else if (valueU.equals(FILEATTRIBSEQUENCE_VALUE)) {
                 // piece de type Single Statement
                 pU =
                     new DBBuilderMultipleStatementPiece(Configuration.getPiecesFilesDir() +
-                        File.separatorChar
-                        + nameU, tagsToProcessU[i], params.isVerbose(), delimiterU,
-                        keepdelimiterU);
+                    File.separatorChar
+                    + nameU, tagsToProcessU[i], params.isVerbose(), delimiterU,
+                    keepdelimiterU);
                 pU.cacheIntoDB(connection, pName, iFile);
               } else if (valueU.equals(FILEATTRIBDBPROC_VALUE)) {
                 // piece de type Database Procedure

@@ -66,7 +66,7 @@ public abstract class DbBuilderDynamicPart {
     }
     this.con = con;
   }
-  
+
   public void setConsole(final Console console) {
     this.console = console;
   }
@@ -82,7 +82,7 @@ public abstract class DbBuilderDynamicPart {
   public Connection getConnection() {
     return con;
   }
-  
+
   public Console getConsole() {
     return console;
   }

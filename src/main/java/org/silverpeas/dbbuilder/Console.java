@@ -31,37 +31,37 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 /**
- * Console into which messages are displayed.
- * It wraps the source into which messages are printed out.
+ * Console into which messages are displayed. It wraps the source into which messages are printed
+ * out.
  */
 public final class Console {
-  
+
   public static final String NEW_LINE = System.getProperty("line.separator");
-  
+
   private File logFile;
   private PrintWriter logBuffer;
 
   /**
-   * Creates and open a console upon the specified file. All messages will be printed into the
-   * file. The file will be created in the directory provided by the Configuration.getLogDir()
-   * method.
+   * Creates and open a console upon the specified file. All messages will be printed into the file.
+   * The file will be created in the directory provided by the Configuration.getLogDir() method.
    * @param fileName the name of the file into which the messages will be printed.
    * @throws IOException if an error occurs while creating the console.
    */
   public Console(final String fileName) throws IOException {
     logFile = new File(Configuration.getLogDir() + File.separator
-          + fileName);
+        + fileName);
     logFile.getParentFile().mkdirs();
-    logBuffer = new PrintWriter(new BufferedWriter(new FileWriter(logFile.getAbsolutePath(), true)));
+    logBuffer =
+        new PrintWriter(new BufferedWriter(new FileWriter(logFile.getAbsolutePath(), true)));
   }
-  
+
   /**
    * Creates and open a console upon the standard system output.
    */
   public Console() {
-    
+
   }
-  
+
   public void printError(String errMsg, Exception ex) {
     printError(errMsg);
     if (logBuffer != null) {
@@ -92,7 +92,7 @@ public final class Console {
       System.out.print(msg);
     }
   }
-  
+
   public void close() {
     logBuffer.close();
   }

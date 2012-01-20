@@ -46,7 +46,7 @@ public class DuplicateContentRemovingApplication {
       migration.migrate();
     } catch (Exception ex) {
       Logger.getLogger(DuplicateContentRemovingApplication.class.getName()).log(Level.SEVERE, ex.
-              getMessage(), ex);
+          getMessage(), ex);
     } finally {
       console.close();
     }
