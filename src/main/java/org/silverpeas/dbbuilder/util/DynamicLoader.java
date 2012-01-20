@@ -77,7 +77,7 @@ public class DynamicLoader {
     @SuppressWarnings("unchecked")
     Class<DbBuilderDynamicPart> dynamicPart =
         (Class<DbBuilderDynamicPart>) Class.forName(className,
-            true, loader);
+        true, loader);
     return dynamicPart.newInstance();
   }
 }
