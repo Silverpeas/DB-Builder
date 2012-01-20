@@ -21,10 +21,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.silverpeas.migration.contentmanagement;
+package org.silverpeas.migration.contentmanagement;
 
-import org.silverpeas.dbbuilder.Console;
-import org.silverpeas.dbbuilder.dbbuilder_dl.DbBuilderDynamicPart;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -32,6 +30,8 @@ import java.sql.Statement;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import org.silverpeas.dbbuilder.Console;
+import org.silverpeas.dbbuilder.dbbuilder_dl.DbBuilderDynamicPart;
 
 /**
  * DB migration to remove any duplicate content instances in the database underlying at Silverpeas.

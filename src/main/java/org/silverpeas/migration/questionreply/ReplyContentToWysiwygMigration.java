@@ -22,7 +22,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
  */
-package com.silverpeas.migration.questionreply;
+package org.silverpeas.migration.questionreply;
 
 import org.silverpeas.dbbuilder.dbbuilder_dl.DbBuilderDynamicPart;
 import org.silverpeas.dbbuilder.util.Configuration;

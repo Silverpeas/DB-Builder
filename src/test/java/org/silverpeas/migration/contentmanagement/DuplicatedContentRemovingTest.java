@@ -21,8 +21,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.silverpeas.migration.contentmanagement;
+package org.silverpeas.migration.contentmanagement;
 
+import org.silverpeas.migration.contentmanagement.DuplicateContentRemoving;
 import org.dbunit.database.IDatabaseConnection;
 import org.dbunit.database.DatabaseConnection;
 import org.springframework.jdbc.datasource.DataSourceUtils;

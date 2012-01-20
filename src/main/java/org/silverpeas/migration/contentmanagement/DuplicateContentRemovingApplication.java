@@ -21,13 +21,13 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.silverpeas.migration.contentmanagement;
+package org.silverpeas.migration.contentmanagement;
 
-import org.silverpeas.dbbuilder.Console;
-import org.silverpeas.dbbuilder.sql.ConnectionFactory;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.silverpeas.dbbuilder.Console;
+import org.silverpeas.dbbuilder.sql.ConnectionFactory;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
@@ -46,8 +46,7 @@ public class DuplicateContentRemovingApplication {
       migration.migrate();
     } catch (Exception ex) {
       Logger.getLogger(DuplicateContentRemovingApplication.class.getName()).log(Level.SEVERE, ex.
-              getMessage(),
-              ex);
+              getMessage(), ex);
     } finally {
       console.close();
     }

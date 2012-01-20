@@ -34,13 +34,14 @@
  */
 package org.silverpeas.dbbuilder;
 
-import org.silverpeas.dbbuilder.util.Configuration;
-import org.silverpeas.dbbuilder.util.Action;
-import org.silverpeas.file.FileUtil;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -49,28 +50,27 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jdom.Element;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.silverpeas.dbbuilder.sql.ConnectionFactory;
 import org.silverpeas.dbbuilder.sql.FileInformation;
 import org.silverpeas.dbbuilder.sql.InstallSQLInstruction;
 import org.silverpeas.dbbuilder.sql.MetaInstructions;
-import org.silverpeas.dbbuilder.sql.UninstallInformations;
 import org.silverpeas.dbbuilder.sql.RemoveSQLInstruction;
 import org.silverpeas.dbbuilder.sql.SQLInstruction;
+import org.silverpeas.dbbuilder.sql.UninstallInformations;
 import org.silverpeas.dbbuilder.sql.UninstallSQLInstruction;
+import org.silverpeas.dbbuilder.util.Action;
 import org.silverpeas.dbbuilder.util.CommandLineParameters;
+import org.silverpeas.dbbuilder.util.Configuration;
 import org.silverpeas.dbbuilder.util.DatabaseType;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.silverpeas.file.FileUtil;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import static org.silverpeas.dbbuilder.DBBuilderFileItem.*;
+import static org.silverpeas.dbbuilder.Console.NEW_LINE;
+import static org.silverpeas.dbbuilder.DBBuilderItem.*;
 import static org.silverpeas.dbbuilder.util.Action.*;
-import static org.silverpeas.dbbuilder.Console.*;
 
 /**
  * @Description :
