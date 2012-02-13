@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+  <uniqueId tablename="sb_node_node" maxid="100" />
+  <uniqueId tablename="SB_Node_Node" maxid="200" />
+  <uniqueId tablename="sb_publication_publi" maxid="300" />
+  <uniqueId tablename="sb_Publication_publis" maxid="400" />
+  <uniqueId tablename="TEST" maxid="10" />
+</dataset>
