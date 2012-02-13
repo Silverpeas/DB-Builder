@@ -295,8 +295,7 @@ public abstract class DBBuilderPiece {
     try {
       methode.invoke(myClass, new Class[] {});
     } catch (Exception e) {
-      throw new Exception("\n\t\t***ERROR RETURNED BY THE JVM : "
-          + e.getMessage());
+      throw new Exception("\n\t\t***ERROR RETURNED BY THE JVM : " + e.getMessage(), e);
     }
   }
 
