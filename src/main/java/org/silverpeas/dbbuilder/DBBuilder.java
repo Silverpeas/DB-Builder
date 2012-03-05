@@ -750,6 +750,7 @@ public class DBBuilder {
                 nomTag, params.isVerbose(), classname, methodname);
           }
           if (dbBuilderPiece != null) {
+            dbBuilderPiece.setConsole(log);
             dbBuilderPiece.executeInstructions(connection);
           }
         }

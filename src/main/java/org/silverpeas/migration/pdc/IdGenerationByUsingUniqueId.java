@@ -65,7 +65,7 @@ public class IdGenerationByUsingUniqueId extends DbBuilderDynamicPart {
                 + " has failed.");
           } else {
             console.printMessageln("The entry creation in UniqueId for table " + aTable
-                + " has succeed");
+                + " has succeeded");
           }
         } else {
           console.printError("The table " + aTable + " doesn't have any column id!");
