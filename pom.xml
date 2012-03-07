@@ -31,7 +31,7 @@
   <groupId>com.silverpeas.builder</groupId>
   <artifactId>dbbuilder</artifactId>
   <packaging>jar</packaging>
-  <version>1.8.1-SNAPSHOT</version>
+  <version>1.8.1</version>
   <name>db-builder</name>
 
   <dependencies>
