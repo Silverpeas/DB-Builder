@@ -220,9 +220,9 @@ public class DuplicateContentRemoving extends DbBuilderDynamicPart {
       int silverContentId = rs.getInt("silverContentId");
       contentsToDelete.add(silverContentId);
     }
-    int deletedCount = executeDeletion(CONTENT_INSTANCE_CLASSIFICATION_DELETION, contentsToDelete);
+    executeDeletion(CONTENT_INSTANCE_CLASSIFICATION_DELETION, contentsToDelete);
+    int deletedCount = executeDeletion(CONTENT_INSTANCE_DELETION, contentsToDelete);
     assertEquals(contentsToDelete.size(), deletedCount);
-    executeDeletion(CONTENT_INSTANCE_DELETION, contentsToDelete);
     return deletedCount;
   }
 

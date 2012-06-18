@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.silverpeas</groupId>
     <artifactId>parent</artifactId>
-    <version>22</version>
+    <version>23-SNAPSHOT</version>
   </parent>
 
   <scm>
@@ -56,8 +56,8 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>javax.enterprise</groupId>
-      <artifactId>cdi-api</artifactId>
+      <groupId>javax.inject</groupId>
+      <artifactId>javax.inject</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
