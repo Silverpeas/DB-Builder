@@ -11,6 +11,7 @@
     <connection>scm:git:git@github.com:Silverpeas/DB-Builder.git</connection>
     <developerConnection>scm:git:git@github.com:Silverpeas/DB-Builder.git</developerConnection>
     <url>https://github.com/Silverpeas/DB-Builder</url>
+    <tag>dbbuilder-1.10</tag>
   </scm>
   
   <repositories>
@@ -31,7 +32,7 @@
   <groupId>com.silverpeas.builder</groupId>
   <artifactId>dbbuilder</artifactId>
   <packaging>jar</packaging>
-  <version>1.10-SNAPSHOT</version>
+  <version>1.10</version>
   <name>db-builder</name>
 
   <dependencies>
