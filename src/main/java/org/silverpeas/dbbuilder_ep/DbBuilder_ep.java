@@ -45,7 +45,7 @@ public class DbBuilder_ep extends DbBuilderDynamicPart {
     // -> si pb de lecture, on considère qu'on n'a pas à encrypter
     try {
       Properties propFile =
-          Configuration.loadResource("/com/stratelia/silverpeas/domains/domainSP.properties");
+          Configuration.loadResource("/org/silverpeas/domains/domainSP.properties");
       m_PasswordEncryption = propFile.getProperty("database.SQLPasswordEncryption", "");
       needEncryption = ("CryptUnix").equalsIgnoreCase(m_PasswordEncryption);
     } catch (Exception e) {

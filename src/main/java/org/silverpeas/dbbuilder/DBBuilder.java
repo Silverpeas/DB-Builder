@@ -150,7 +150,7 @@ public class DBBuilder {
           + " (" + TODAY + ").");
       // Lecture des variables d'environnement à partir de dbBuilderSettings
       dbBuilderResources = Configuration.loadResource(
-          "/com/stratelia/silverpeas/dbBuilder/settings/dbBuilderSettings.properties");
+          "/org/silverpeas/dbBuilder/settings/dbBuilderSettings.properties");
       // Lecture des paramètres d'entrée
       params = new CommandLineParameters(args);
 

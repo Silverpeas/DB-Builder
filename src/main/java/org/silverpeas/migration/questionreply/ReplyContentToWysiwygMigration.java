@@ -54,7 +54,7 @@ public class ReplyContentToWysiwygMigration extends DbBuilderDynamicPart {
   }
 
   public void migrateReplyContentToWysiwyg() throws Exception {
-    Properties props = Configuration.loadResource("/com/stratelia/webactiv/general.properties");
+    Properties props = Configuration.loadResource("/org/silverpeas/general.properties");
     String upLoadPath = props.getProperty("uploadsPath");
     List<ReplyContent> contents = getContent();
     for (ReplyContent content : contents) {
