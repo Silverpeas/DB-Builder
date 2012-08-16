@@ -486,10 +486,11 @@ public class jcrypt {
   }
 
   public static final String crypt(String salt, String original) {
-    while (salt.length() < 2)
+    while (salt.length() < 2) {
       salt += "A";
+    }
 
-    StringBuffer buffer = new StringBuffer("             ");
+    StringBuilder buffer = new StringBuilder("             ");
 
     char charZero = salt.charAt(0);
     char charOne = salt.charAt(1);
@@ -502,8 +503,9 @@ public class jcrypt {
 
     byte key[] = new byte[8];
 
-    for (int i = 0; i < key.length; i++)
+    for (int i = 0; i < key.length; i++) {
       key[i] = (byte) 0;
+    }
 
     for (int i = 0; i < key.length && i < original.length(); i++) {
       int iChar = (int) original.charAt(i);
@@ -524,8 +526,9 @@ public class jcrypt {
       for (int j = 0, c = 0; j < 6; j++) {
         c <<= 1;
 
-        if (((int) b[y] & u) != 0)
+        if (((int) b[y] & u) != 0) {
           c |= 1;
+        }
 
         u >>>= 1;
 
@@ -537,12 +540,5 @@ public class jcrypt {
       }
     }
     return (buffer.toString());
-  }
-
-  public static void main(String args[]) {
-    if (args.length >= 2) {
-      System.out.println("[" + args[0] + "] [" + args[1] + "] => ["
-          + jcrypt.crypt(args[0], args[1]) + "]");
-    }
   }
 }

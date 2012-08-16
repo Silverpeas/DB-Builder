@@ -37,9 +37,7 @@ public class Instruction {
   public Instruction() {
   }
 
-  public Instruction(int instructionType, String instructionText,
-      Object instructionDetail) {
-
+  public Instruction(int instructionType, String instructionText, Object instructionDetail) {
     this.instructionType = instructionType;
     this.instructionText = instructionText;
     this.instructionDetail = instructionDetail;

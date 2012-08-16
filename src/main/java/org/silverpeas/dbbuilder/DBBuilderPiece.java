@@ -1,27 +1,23 @@
 /**
  * Copyright (C) 2000 - 2009 Silverpeas
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Affero General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- * As a special exception to the terms and conditions of version 3.0 of
- * the GPL, you may redistribute this Program in connection with Free/Libre
- * Open Source Software ("FLOSS") applications as described in Silverpeas's
- * FLOSS exception.  You should have received a copy of the text describing
- * the FLOSS exception, and it is also available here:
+ * As a special exception to the terms and conditions of version 3.0 of the GPL, you may
+ * redistribute this Program in connection with Free/Libre Open Source Software ("FLOSS")
+ * applications as described in Silverpeas's FLOSS exception. You should have received a copy of the
+ * text describing the FLOSS exception, and it is also available here:
  * "http://repository.silverpeas.com/legal/licensing"
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License along with this program.
+ * If not, see <http://www.gnu.org/licenses/>.
  */
-
 package org.silverpeas.dbbuilder;
 
 import java.io.File;
@@ -40,6 +36,7 @@ import java.util.Properties;
 import org.silverpeas.dbbuilder.dbbuilder_dl.DbBuilderDynamicPart;
 
 import java.sql.ResultSet;
+import java.sql.Statement;
 
 public abstract class DBBuilderPiece {
 
@@ -57,7 +54,7 @@ public abstract class DBBuilderPiece {
   private boolean traceMode = false;
   // contenu interprété en séquence d'instructions
   protected Instruction[] instructions = null;
-  protected Connection connection = null;
+  protected Connection connection;
   protected Console console = null;
 
   // Contructeur utilisé pour une pièce de type fichier
@@ -170,8 +167,8 @@ public abstract class DBBuilderPiece {
   }
 
   public void traceInstructions() {
-    for (int i = 0; i < instructions.length; i++) {
-      System.out.println(instructions[i].getInstructionText());
+    for (Instruction instruction : instructions) {
+      System.out.println(instruction.getInstructionText());
     }
   }
 
@@ -181,15 +178,20 @@ public abstract class DBBuilderPiece {
   public void executeInstructions(Connection connection) throws Exception {
     setConnection(connection);
     // try {
-    for (int i = 0; i < instructions.length; i++) {
-      String currentInstruction = instructions[i].getInstructionText();
-      if (instructions[i].getInstructionType() == Instruction.IN_UPDATE) {
-        executeSingleUpdate(currentInstruction);
-      } else if (instructions[i].getInstructionType() == Instruction.IN_CALLDBPROC) {
-        executeSingleProcedure(currentInstruction,
-            (DbProcParameter[]) instructions[i].getInstructionDetail());
-      } else if (instructions[i].getInstructionType() == Instruction.IN_INVOKEJAVA) {
-        executeJavaInvoke(currentInstruction, instructions[i].getInstructionDetail());
+    for (Instruction instruction : instructions) {
+      String currentInstruction = instruction.getInstructionText();
+      switch (instruction.getInstructionType()) {
+        case Instruction.IN_INVOKEJAVA:
+          executeJavaInvoke(currentInstruction, instruction.getInstructionDetail());
+          break;
+        case Instruction.IN_CALLDBPROC:
+          executeSingleProcedure(currentInstruction, (DbProcParameter[]) instruction.
+              getInstructionDetail());
+          break;
+        case Instruction.IN_UPDATE:
+        default:
+          executeSingleUpdate(currentInstruction);
+          break;
       }
     }
   }
@@ -249,14 +251,16 @@ public abstract class DBBuilderPiece {
       }
       DBBuilder.printMessageln("\t\t>" + printableInstruction);
     }
+    Statement stmt = connection.createStatement();
     try {
-      java.sql.Statement stmt = connection.createStatement();
       stmt.executeUpdate(currentInstruction);
-      stmt.close();
     } catch (Exception e) {
       throw new Exception("\n\t\t***ERROR RETURNED BY THE RDBMS : "
           + e.getMessage() + "\n\t\t***STATEMENT ON ERROR IS : " + "\n"
           + currentInstruction + "\n\t\t" + pieceName, e);
+    } finally {
+
+      stmt.close();
     }
   }
 
@@ -287,13 +291,13 @@ public abstract class DBBuilderPiece {
           + currentInstruction + "()");
     }
     ((DbBuilderDynamicPart) myClass).setConnection(connection);
-    Method methode = myClass.getClass().getMethod(currentInstruction, new Class[] {});
+    Method methode = myClass.getClass().getMethod(currentInstruction);
     if (methode == null) {
       throw new Exception("No method \"" + currentInstruction
           + "\" defined for \"" + myClass.getClass().getName() + "\" class.");
     }
     try {
-      methode.invoke(myClass, new Class[] {});
+      methode.invoke(myClass);
     } catch (Exception e) {
       throw new Exception("\n\t\t***ERROR RETURNED BY THE JVM : " + e.getMessage(), e);
     }
@@ -326,10 +330,7 @@ public abstract class DBBuilderPiece {
   }
 
   private synchronized Integer getIncrement() {
-    int i = increment.intValue();
-    i++;
-    increment = new Integer(i);
-    return increment;
+    return increment++;
   }
 
   private String getContentFromDB(String itemID) throws Exception {

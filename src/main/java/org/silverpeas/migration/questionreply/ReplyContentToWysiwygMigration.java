@@ -24,8 +24,6 @@
  */
 package org.silverpeas.migration.questionreply;
 
-import org.silverpeas.dbbuilder.dbbuilder_dl.DbBuilderDynamicPart;
-import org.silverpeas.dbbuilder.util.Configuration;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -37,8 +35,14 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+
+import org.silverpeas.dbbuilder.dbbuilder_dl.DbBuilderDynamicPart;
+import org.silverpeas.dbbuilder.util.Configuration;
+
+import static java.io.File.separatorChar;
 
 /**
  * @author ehugonnet
@@ -54,7 +58,7 @@ public class ReplyContentToWysiwygMigration extends DbBuilderDynamicPart {
   }
 
   public void migrateReplyContentToWysiwyg() throws Exception {
-    Properties props = Configuration.loadResource("/com/stratelia/webactiv/general.properties");
+    Properties props = Configuration.loadResource("/org/silverpeas/general.properties");
     String upLoadPath = props.getProperty("uploadsPath");
     List<ReplyContent> contents = getContent();
     for (ReplyContent content : contents) {
@@ -64,12 +68,10 @@ public class ReplyContentToWysiwygMigration extends DbBuilderDynamicPart {
 
   public List<ReplyContent> getContent() throws Exception {
     List<ReplyContent> result = new ArrayList<ReplyContent>();
-    Connection connection = null;
-    Statement stmt = null;
+    Connection connection = this.getConnection();
+    Statement stmt = connection.createStatement();
     ResultSet rs = null;
     try {
-      connection = this.getConnection();
-      stmt = connection.createStatement();
       rs = stmt.executeQuery(QUERY);
       while (rs.next()) {
         result.add(new ReplyContent(rs.getInt("id"), rs.getString("instanceid"), rs.getString(
@@ -82,16 +84,13 @@ public class ReplyContentToWysiwygMigration extends DbBuilderDynamicPart {
       if (rs != null) {
         rs.close();
       }
-      if (stmt != null) {
-        stmt.close();
-      }
+      stmt.close();
     }
   }
 
   void migrate(ReplyContent content, String upLoadPath) {
-    File targetDir = new File(upLoadPath + File.separatorChar + content.getInstanceId()
-        + File.separatorChar + "Attachment" + File.separatorChar + "wysiwyg"
-        + File.separatorChar);
+    File targetDir = new File(upLoadPath + separatorChar + content.getInstanceId()
+        + separatorChar + "Attachment" + separatorChar + "wysiwyg" + separatorChar);
     InputStream in = null;
     try {
       targetDir.mkdirs();
