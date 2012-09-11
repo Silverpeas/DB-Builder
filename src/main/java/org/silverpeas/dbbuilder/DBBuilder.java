@@ -53,6 +53,8 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdom.Element;
+import static org.silverpeas.dbbuilder.Console.NEW_LINE;
+import static org.silverpeas.dbbuilder.DBBuilderItem.*;
 import org.silverpeas.dbbuilder.sql.ConnectionFactory;
 import org.silverpeas.dbbuilder.sql.FileInformation;
 import org.silverpeas.dbbuilder.sql.InstallSQLInstruction;
@@ -62,15 +64,12 @@ import org.silverpeas.dbbuilder.sql.SQLInstruction;
 import org.silverpeas.dbbuilder.sql.UninstallInformations;
 import org.silverpeas.dbbuilder.sql.UninstallSQLInstruction;
 import org.silverpeas.dbbuilder.util.Action;
+import static org.silverpeas.dbbuilder.util.Action.*;
 import org.silverpeas.dbbuilder.util.CommandLineParameters;
 import org.silverpeas.dbbuilder.util.Configuration;
 import org.silverpeas.dbbuilder.util.DatabaseType;
 import org.silverpeas.file.FileUtil;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-
-import static org.silverpeas.dbbuilder.Console.NEW_LINE;
-import static org.silverpeas.dbbuilder.DBBuilderItem.*;
-import static org.silverpeas.dbbuilder.util.Action.*;
 
 /**
  * @Description :
@@ -83,7 +82,7 @@ public class DBBuilder {
 
   public final static Date TODAY = new java.util.Date();
   // Version application
-  public static final String DBBuilderAppVersion = "V5";
+  public static final String DBBuilderAppVersion = "Database Builder V5";
   // Fichier log
   protected static Console log;
 
@@ -138,12 +137,12 @@ public class DBBuilder {
    * @see
    */
   public static void main(String[] args) {
+    int status = 0;
     Logger.getLogger("org.springframework").setLevel(Level.SEVERE);
     new ClassPathXmlApplicationContext("classpath:/spring-jdbc-datasource.xml");
     try {
       // Ouverture des traces
-      System.out.println("Start Database build using Silverpeas DBBuilder v. "
-          + DBBuilderAppVersion + " (" + TODAY + ").");
+      System.out.println(DBBuilderAppVersion + " (" + TODAY + ").");
       log = new Console("DBBuilder.log");
       printMessageln(NEW_LINE + "*************************************************************");
       printMessageln("Start Database Build using Silverpeas DBBuilder v. " + DBBuilderAppVersion
@@ -234,9 +233,9 @@ public class DBBuilder {
         Map packagesIntoFile = new HashMap();
         // ATH à compléter ici algo de traitement de l'ordonnancement
         try {
-          DBXmlDocument[] bidon = checkDependencies(listeDBXmlDocument);
+          checkDependencies(listeDBXmlDocument);
         } catch (Exception e) {
-          e.printStackTrace();
+          printError(e.getMessage(), e);
         }
         List<DBXmlDocument> orderedlisteDBXmlDocument = listeDBXmlDocument;
 
@@ -259,7 +258,7 @@ public class DBBuilder {
         printMessageln(NEW_LINE);
         printMessageln("Build decisions are :");
         // d'abord le fichier dbbuilder-contribution ...
-        DBXmlDocument fileXml = null;
+        DBXmlDocument fileXml;
         if (ACTION_ENFORCE_UNINSTALL != params.getAction()) {
           try {
             fileXml = new DBXmlDocument(dirXml, FIRST_DBCONTRIBUTION_FILE);
@@ -358,16 +357,17 @@ public class DBBuilder {
       System.out.println(NEW_LINE + "Database Build SUCCESSFULL (" + TODAY + ").");
 
     } catch (Exception e) {
-      e.printStackTrace();
       printError(e.getMessage(), e);
       printMessageln(e.getMessage());
       // e.printStackTrace();
       printMessageln(NEW_LINE);
       printMessageln("Database Build FAILED (" + TODAY + ").");
       System.out.println(NEW_LINE + "Database Build FAILED (" + TODAY + ").");
+      status = 1;
     } finally {
       log.close();
     }
+    System.exit(status);
   } // main
 
   // ---------------------------------------------------------------------
@@ -463,13 +463,13 @@ public class DBBuilder {
       UninstallInformations processesToCacheIntoDB, MetaInstructions sqlMetaInstructions) {
 
     String package_name = pdbbuilderItem.getModule();
-    String versionDB = null;
-    String versionFile = null;
+    String versionDB;
+    String versionFile;
     try {
       versionDB = pdbbuilderItem.getVersionFromDB();
       versionFile = pdbbuilderItem.getVersionFromFile();
     } catch (Exception e) {
-      e.printStackTrace();
+      printError(e.getMessage(), e);
       return;
     }
     String[] tags_to_merge = null;
@@ -491,7 +491,7 @@ public class DBBuilder {
         } else {
           printMessageln("\t" + package_name + " is up to date with version " + versionFile
               + " and will be optimized.");
-          tags_to_merge = TAGS_TO_MERGE_4_OPTIMIZE;
+          // tags_to_merge = TAGS_TO_MERGE_4_OPTIMIZE;
           blocks_merge = new VersionTag[1];
           blocks_merge[0] = new VersionTag(CURRENT_TAG, versionFile);
         }
@@ -549,7 +549,7 @@ public class DBBuilder {
             xmlFile.mergeWith(pdbbuilderItem, tags_to_merge, blocks_merge);
           } catch (Exception e) {
             printMessage("Error with " + pdbbuilderItem.getModule() + " " + e.getMessage());
-            e.printStackTrace();
+            printError(e.getMessage(), e);
           }
         }
       }
@@ -571,7 +571,7 @@ public class DBBuilder {
           try {
             xmlFile.mergeWith(pdbbuilderItem, tags_to_merge, null);
           } catch (Exception e) {
-            e.printStackTrace();
+            printError(e.getMessage(), e);
           }
         }
       }
